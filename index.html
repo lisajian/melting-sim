@@ -1,3 +1,81 @@
-<html>
-Hello world
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>
+  body {
+    padding: 100px;
+    width: 800px;
+    margin: auto;
+    text-align: left;
+    font-weight: 300;
+    font-family: 'Open Sans', sans-serif;
+    color: #121212;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+</style>
+<title>CS 184 Rasterizer</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+
+<body>
+
+<h1 align="middle">3D Melting Simulation, Project Proposal</h1>
+<h3 align="middle">Partners: Ellen Hong, Lisa Jian</h3>
+
+<br>
+
+<div>
+
+<h2>Summary</h2>
+<p>An exploration of bunny meltation. The intrigue is what’s inside. </p>
+
+<h2>Project Description</h2>
+<p>Representing phase transitions without the use of meshes and over-complication is challenging (?). Mesh representation would require remeshing to support the topological change [1], so instead we will explore a particle representation of our system. The use of particles, in addition to the material point method (MPM) is a more fluid/flexible representation that will allow us to achieve this phase change animation with a simpler implementation. </p>
+
+<h2>Goals and Deliverables</h2>
+<p>
+	<ol>
+		<li>What we plan to deliver</li>
+			<p>We plan to achieve a 3-dimensional animation of the melting of a particle representation of a bunny. This may be in the form of a couple of (potentially slow-rendered) frames of the animation, since we may not be able to achieve the speedup required to render the animation in real-time.</p>
+		<li>What we hope to deliver</li>
+			<p>We hope to achieve a “real-time” 3-dimensional animation of a cold chocolate bunny being melted by hot liquid chocolate. Ideally this would be an animation from start to finish, of a bunny rendered with glossy chocolate material. </p>
+	</ol>
+</p>
+
+<h2>Schedule</h2>
+<p>
+	<ul>
+		<li>By 4/14</li>
+			<p>Make framework for project using Mitsuba (create skeleton files and figure out how to render/animate them)</p>
+		<li>By 4/21 (milestone due!)</li>
+			<p>Implement algo discussed in [1] and get a few frames of melting bunny</p>
+		<li>By 4/28</li>
+			<p>Speed up animation (hopefully we’ll have an animation)</p>
+		<li>By 5/3 (presentation due!)</li>
+			<p>Complete writeup and presentation</p>
+	</ul>
+</p>
+
+<h2>Resources (Articles)</h2>
+<p>
+	<ol>
+		<li><a href="http://alexey.stomakhin.com/research/siggraph2014_melt.pdf">Augmented MPM for Phase-Change and Varied Materials</a> (from final project suggestions)</li>
+		<li><a href="http://www.cs.ubc.ca/~rbridson/docs/zhu-siggraph05-sandfluid.pdf">Animating Sand as a Fluid</a></li>
+	</ol>
+</p>
+
+<h2>Resources (Other)</h2>
+<p>
+	<ol>
+		<li>Mitsuba rendering system</li>
+		<li>MSI GAMING GeForce GTX 1060</li>
+	</ol>
+</p>
+
+
+</body>
 </html>
