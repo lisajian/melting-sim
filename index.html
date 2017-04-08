@@ -31,10 +31,10 @@
 <div>
 
 <h2>Summary</h2>
-<p>An exploration of bunny meltation. The intrigue is what’s inside. </p>
+<p>An exploration of bunny meltation. We will be simulating the phase change from solid to liquid using an augmented material point method (MPM). This method essentially applies the necessary stresses/forces (via a lot of math) to update the position of each particle of a marker-and-cell (MAC) grid at each time step.</p>
 
 <h2>Project Description</h2>
-<p>Representing phase transitions without the use of meshes and over-complication is challenging (?). Mesh representation would require remeshing to support the topological change [1], so instead we will explore a particle representation of our system. The use of particles, in addition to the material point method (MPM) is a more fluid/flexible representation that will allow us to achieve this phase change animation with a simpler implementation. </p>
+<p>Simulating the physical behavior of objects is a common issue in computer graphics. In particular, achieving an accurate simulation of materials undergoing phase transitions (i.e. melting, solidifying, etc.) is difficult to do efficiently, since common methods (such as MPM) cannot model both liquid and solid states. The augmented MPM method we will be using employs a combination of a particle-based and grid system, as well as the application of a number of different techniques that update the particle positions based on physics and heat properties. The challenge of solving this definitely comes from not only understanding all of the math and implementing it, but also in ensuring that we are able to (hopefully) come up with enough timestep frames of our simulation to render an animation in Mitsuba (software we are also unfamiliar with).</p>
 
 <h2>Goals and Deliverables</h2>
 <p>
@@ -74,7 +74,7 @@
 <p>
     <ol>
         <li>Mitsuba rendering system</li>
-        <li>MSI GAMING GeForce GTX 1060</li>
+        <li>ASUS GAMING GeForce GTX 1060</li>
     </ol>
 </p>
 
