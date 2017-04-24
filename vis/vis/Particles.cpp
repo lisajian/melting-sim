@@ -24,7 +24,7 @@ void Particles::reset() {
     // Number of particles in each dimension
     // std::cout << "MADE" << std::endl;
     int nx = 10;
-    int ny = 10;
+    int ny = 1;
     int nz = 10;
     float y_offset = 1;
     float z_offset = -2;

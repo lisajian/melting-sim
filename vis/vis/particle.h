@@ -21,7 +21,7 @@ struct Particle {
     glm::dvec3 p;
     glm::dvec3 v;
     glm::dvec3 forces;
-    float mass = 100;
+    float mass = 800; // TODO: Masses shouldn't be this heavy...
 };
 
 #endif /* PARTICLE_H */
