@@ -15,6 +15,7 @@
 
 Particles::Particles() {
     // std::cout << "MADE" << std::endl;
+    bbox = BBox(glm::dvec3(-2, -2, -2), glm::dvec3(2, 2, 2)); // TODO: remove janky default
     reset();
 }
 
@@ -51,6 +52,7 @@ void Particles::step() {
         }
         v += p.forces / (double) p.mass;
         p.p = v;
+        bbox.collides(p);
     }
 }
 

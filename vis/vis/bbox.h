@@ -4,6 +4,7 @@
 #define BBOX_H
 
 #include <iostream>
+#include "particle.h"
 #include <glm/glm.hpp>
 #include <vector>
 #if defined(__APPLE_CC__)
@@ -15,6 +16,7 @@
 
 struct BBox {
     // Constructor for an invalid bounding box
+public:
     BBox() {
         double inf = std::numeric_limits<double>::infinity();
         b_min = glm::dvec3(inf, inf, inf);

@@ -15,6 +15,8 @@
 #define PARTICLES_H
 
 #include <iostream>
+#include "bbox.h"
+#include "particle.h"
 #include <glm/glm.hpp>
 #include <vector>
 #if defined(__APPLE_CC__)
@@ -29,25 +31,28 @@ struct Particle;
 class Particles {
     public:
         Particles();
+        Particles(BBox b) : bbox(b) {} // TODO: Particles don't need to know about bounding box...
+
         void render() const;
         void reset();
         void step(); // simulate one frame
     private:
         std::vector<Particle> particles;
+        BBox bbox;
 };
 
-struct Particle {
-    Particle(glm::dvec3 init_pos)
-        : p(init_pos) {}
+// struct Particle {
+//     Particle(glm::dvec3 init_pos)
+//         : p(init_pos) {}
 
-    Particle(glm::dvec3 init_pos, glm::dvec3 init_velo)
-        : p(init_pos), v(init_velo) {}
+//     Particle(glm::dvec3 init_pos, glm::dvec3 init_velo)
+//         : p(init_pos), v(init_velo) {}
 
-    glm::dvec3 p;
-    glm::dvec3 v;
-    glm::dvec3 forces;
-    float mass = 100;
-};
+//     glm::dvec3 p;
+//     glm::dvec3 v;
+//     glm::dvec3 forces;
+//     float mass = 100;
+// };
 
 #endif /* PARTICLES_H */
 

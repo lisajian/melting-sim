@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "Particles.h"
+#include "particle.h"
 #include "bbox.h"
 
 #if OUTPUT_ANIMATION
@@ -26,9 +27,9 @@ const int render_step = 3;
 int mx, my;
 glm::dvec3 b_min(-2, -2, -2);
 glm::dvec3 b_max(2, 2, 2);
-
-Particles particles;
 BBox bbox(b_min, b_max);
+
+Particles particles(bbox);
 
 void display(void);
 
