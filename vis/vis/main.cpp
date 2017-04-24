@@ -30,8 +30,7 @@ void display(void);
 
 void reshape(int width, int height);
 
-void idle(void)
-{
+void idle(void) {
     particles.step();
     glutPostRedisplay();
     if(frame/render_step >= 300)
@@ -66,8 +65,7 @@ void keyboard(unsigned char c, int x, int y) {
     }
 }
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
     glutInit(&argc, argv);
 
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
@@ -85,15 +83,13 @@ int main(int argc, char** argv)
     return EXIT_SUCCESS;
 }
 
-void reshape(int w, int h)
-{
+void reshape(int w, int h) {
     width = w;
     height = h;
     glViewport(0, 0, w, h);
 }
 
-void display(void)
-{
+void display(void) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // your drawing code goes here
@@ -109,17 +105,14 @@ void display(void)
     glutSwapBuffers();
 }
 
-void mouse(int button, int state, int x, int y)
-{
-    if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
-    {
+void mouse(int button, int state, int x, int y) {
+    if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
         mx = x;
         my = y;
     }
 }
 
-void motion(int x, int y)
-{
+void motion(int x, int y) {
     int dx = x - mx;
     int dy = y - my;
     mx = x;

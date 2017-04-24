@@ -24,6 +24,8 @@
 #include <math.h>
 #endif
 
+struct Particle;
+
 class Particles {
 public:
     Particles();
@@ -31,13 +33,21 @@ public:
     void reset();
     void step(); // simulate one frame
 private:
-    struct Particle
-    {
-        glm::dvec3 p;
-        glm::dvec3 v;
-    };
-    
     std::vector<Particle> particles;
+};
+
+struct Particle
+{
+	Particle(glm::dvec3 init_pos)
+		: p(init_pos) {}
+
+	Particle(glm::dvec3 init_pos, glm::dvec3 init_velo)
+		: p(init_pos), v(init_velo) {}
+
+    glm::dvec3 p;
+    glm::dvec3 v;
+    glm::dvec3 forces;
+    float mass = 100;
 };
 
 #endif /* PARTICLES_H */

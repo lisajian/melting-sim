@@ -14,16 +14,19 @@
 #include "Particles.h"
 
 Particles::Particles() {
+    // std::cout << "MADE" << std::endl;
     reset();
 }
 
 // Resets all particles back to default state.
 void Particles::reset() {
     // Number of particles in each dimension
-    std::cout << "MADE" << std::endl;
+    // std::cout << "MADE" << std::endl;
     int nx = 10;
     int ny = 10;
     int nz = 10;
+    float y_offset = 1;
+    float z_offset = -2;
     float d = 0.1;
     for(int x=0; x<nx; x++)
     {
@@ -31,25 +34,27 @@ void Particles::reset() {
         {
             for(int z=0; z<nz; z++)
             {
-                Particle par;
-                par.p = glm::dvec3((x+0.5-nx*0.5)*d, (y+0.5)*d-1.0, (z+0.5-nz*0.5)*d);
+                Particle par(glm::dvec3((x+0.5-nx*0.5)*d + z_offset, (y+0.5)*d-1.0 + y_offset, (z+0.5-nz*0.5)*d));
+                par.forces = glm::dvec3(0.0, -9.8, 0.0); // Just gravity
                 particles.push_back(par);
             }
         }
     }
 }
 
+// Single update step for all particles
 void Particles::step() {
     for (auto &p : particles) {
         glm::dvec3 v = p.p;
-        if (v[0] > 2 || v[1] > 2 || v[2] > 2 || v[0] < -2 || v[1] < -2 || v[2] < -2) {
-                    continue;
+        if (v[1] < -2) {
+            continue;
         }
-        v[2] += 0.01;
+        v += p.forces / (double) p.mass;
         p.p = v;
     }
 }
 
+// 
 void Particles::render() const
 {
     GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
@@ -79,7 +84,7 @@ void Particles::render() const
 
         glPushMatrix(); // Set where to start the current object transformations
         glTranslatef(par.p.x, par.p.y, par.p.z); // Multiply current matrix by a translation matrix
-        glutSolidSphere(0.05, 10, 10); // Render a solid sphere
+        glutSolidSphere(0.04, 10, 10); // Render a solid sphere
         glPopMatrix(); // End the current object transformations
         i++;
     }
