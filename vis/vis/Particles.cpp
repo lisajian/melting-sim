@@ -35,7 +35,7 @@ void Particles::reset() {
             for(int z=0; z<nz; z++)
             {
                 Particle par(glm::dvec3((x+0.5-nx*0.5)*d + z_offset, (y+0.5)*d-1.0 + y_offset, (z+0.5-nz*0.5)*d));
-                par.forces = glm::dvec3(0.0, -9.8, 0.0); // Just gravity
+                par.forces = glm::dvec3(0.0, -9.8, 0.0); // TODO: Handle external forces better. This is gravity
                 particles.push_back(par);
             }
         }

@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "Particles.h"
+#include "bbox.h"
 
 #if OUTPUT_ANIMATION
 #include <opencv2/opencv.hpp>
@@ -23,8 +24,11 @@ int height = 800;
 int frame = 0;
 const int render_step = 3;
 int mx, my;
+glm::dvec3 b_min(-2, -2, -2);
+glm::dvec3 b_max(2, 2, 2);
 
 Particles particles;
+BBox bbox(b_min, b_max);
 
 void display(void);
 

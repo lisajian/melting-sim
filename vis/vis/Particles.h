@@ -27,22 +27,21 @@
 struct Particle;
 
 class Particles {
-public:
-    Particles();
-    void render() const;
-    void reset();
-    void step(); // simulate one frame
-private:
-    std::vector<Particle> particles;
+    public:
+        Particles();
+        void render() const;
+        void reset();
+        void step(); // simulate one frame
+    private:
+        std::vector<Particle> particles;
 };
 
-struct Particle
-{
-	Particle(glm::dvec3 init_pos)
-		: p(init_pos) {}
+struct Particle {
+    Particle(glm::dvec3 init_pos)
+        : p(init_pos) {}
 
-	Particle(glm::dvec3 init_pos, glm::dvec3 init_velo)
-		: p(init_pos), v(init_velo) {}
+    Particle(glm::dvec3 init_pos, glm::dvec3 init_velo)
+        : p(init_pos), v(init_velo) {}
 
     glm::dvec3 p;
     glm::dvec3 v;
