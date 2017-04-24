@@ -13,13 +13,14 @@
 
 struct Particle {
     Particle(glm::dvec3 init_pos)
-        : p(init_pos) {}
+        : last_pos(init_pos), curr_pos(init_pos), vdt(glm::dvec3(0, 0, 0)) {}
 
-    Particle(glm::dvec3 init_pos, glm::dvec3 init_velo)
-        : p(init_pos), v(init_velo) {}
+    // Particle(glm::dvec3 init_pos, glm::dvec3 init_velo)
+    //     : last_pos(init_pos), curr_pos(init_pos), vdt(init_velo) {}
 
-    glm::dvec3 p;
-    glm::dvec3 v;
+    glm::dvec3 last_pos;
+    glm::dvec3 curr_pos;
+    glm::dvec3 vdt;
     glm::dvec3 forces;
     float mass = 800; // TODO: Masses shouldn't be this heavy...
 };

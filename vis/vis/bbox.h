@@ -33,26 +33,31 @@ struct BBox {
         // Returns true if p will collide with box in given
         // time step and adjusts velocity vector accordingly
         bool collides(Particle &p) {
-            glm::dvec3 next_step = p.v + p.p;
+            // TODO: Have a separate method for verlett integration
+            double d = 0.05;
+            glm::dvec3 next_step = p.curr_pos + (1 - d) * p.vdt + (p.forces / (double) p.mass);
             bool c = false;
 
-            // Collided with bounding box
+            // Collided with bounding box; make adjustment in position
             // TODO: Dampening doesn't look right
             // TODO: Implement self collisions
             // TODO: Bounce's angle seems a bit strange..
-            if (next_step[0] > b_max[0] || next_step[0] < b_min[0]) {
-                p.v[0] *= -1;
-                // p.p[0] += 0.01;
+            if (next_step.x > b_max.x || next_step.x < b_min.x) {
+                p.vdt.x *= -1;
+                // p.last_pos = p.curr_pos;
+                // p.curr_pos.x *= -1;
                 c = true;
             }
-            if (next_step[1] > b_max[1] || next_step[1] < b_min[1]) {
-                p.v[1] *= -1;
-                // p.p[1] += 0.01;
+            if (next_step.y > b_max.y || next_step.y < b_min.y) {
+                p.vdt.y *= -1;
+                // p.last_pos = p.curr_pos;
+                // p.curr_pos.y *= -1;
                 c = true;
             }
-            if (next_step[2] > b_max[2] || next_step[2] < b_min[2]) {
-                p.v[2] *= -1;
-                // p.p[2] += 0.01;
+            if (next_step.z > b_max.z || next_step.z < b_min.z) {
+                p.vdt.z *= -1;
+                // p.last_pos = p.curr_pos;
+                // p.curr_pos.z *= -1;
                 c = true;
             }
             return c;

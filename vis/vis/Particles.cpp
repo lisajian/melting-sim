@@ -23,9 +23,9 @@ Particles::Particles() {
 void Particles::reset() {
     // Number of particles in each dimension
     // std::cout << "MADE" << std::endl;
-    int nx = 10;
+    int nx = 1;
     int ny = 1;
-    int nz = 10;
+    int nz = 1;
     float y_offset = 1;
     float z_offset = -2;
     float d = 0.1;
@@ -46,13 +46,22 @@ void Particles::reset() {
 // Single update step for all particles
 void Particles::step() {
     for (auto &p : particles) {
-        glm::dvec3 v = p.p;
-        if (v[1] < -2) {
-            continue;
+        // Use Verlett integration
+        double d = 0.05;
+        p.vdt = p.curr_pos - p.last_pos;
+        std::cout << "Before adjustment " << p.vdt.y << std::endl;
+        bool c = bbox.collides(p);
+        glm::dvec3 new_pos = p.curr_pos + (1 - d) * p.vdt + (p.forces / (double) p.mass);
+        p.last_pos = p.curr_pos;
+        p.curr_pos = new_pos;
+        if (c && p.curr_pos.y < -2) {
+            std::cout << "Not adjusted" << std::endl;
+            std::cout << p.curr_pos.y << std::endl;
         }
-        p.p += p.v;
-        p.v += p.forces / (double) p.mass;
-        bbox.collides(p);
+        // p.last_pos = p.curr_pos;
+        // p.curr_pos += p.v;
+        // p.v += p.forces / (double) p.mass;
+        // bbox.collides(p);
     }
 }
 
@@ -85,7 +94,7 @@ void Particles::render() const
         // Source for push/pop: http://www.swiftless.com/tutorials/opengl/pop_and_push_matrices.html
 
         glPushMatrix(); // Set where to start the current object transformations
-        glTranslatef(par.p.x, par.p.y, par.p.z); // Multiply current matrix by a translation matrix
+        glTranslatef(par.curr_pos.x, par.curr_pos.y, par.curr_pos.z); // Multiply current matrix by a translation matrix
         glutSolidSphere(0.04, 10, 10); // Render a solid sphere
         glPopMatrix(); // End the current object transformations
         i++;
