@@ -6,15 +6,21 @@
 
 /* 
  * File:   Particles.cpp
- * Author: swl
+ * Author(s): swl
  * 
  * Created on April 15, 2016, 12:16 PM
  */
 
 #include "Particles.h"
 
-Particles::Particles() 
-{
+Particles::Particles() {
+    reset();
+}
+
+// Resets all particles back to default state.
+void Particles::reset() {
+    // Number of particles in each dimension
+    std::cout << "MADE" << std::endl;
     int nx = 10;
     int ny = 10;
     int nz = 10;
@@ -33,10 +39,21 @@ Particles::Particles()
     }
 }
 
+void Particles::step() {
+    for (auto &p : particles) {
+        glm::dvec3 v = p.p;
+        if (v[0] > 2 || v[1] > 2 || v[2] > 2 || v[0] < -2 || v[1] < -2 || v[2] < -2) {
+                    continue;
+        }
+        v[2] += 0.01;
+        p.p = v;
+    }
+}
+
 void Particles::render() const
 {
     GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
-    GLfloat mat_shininess[] = { 50.0 };
+    GLfloat mat_shininess[] = { 50.0 }; // Larger number == lest shiny
     GLfloat light_position[] = { 10.0, 10.0, 10.0, 0.0 };
     glShadeModel (GL_SMOOTH);
     glPushAttrib(GL_ALL_ATTRIB_BITS);
@@ -55,13 +72,16 @@ void Particles::render() const
     glColorMaterial(GL_FRONT, GL_AMBIENT);
     glColor3f(0.2, 0.5, 0.8);
     
+    int i = 0 ;
     for(const Particle &par : particles)
     {    
-        
-        glPushMatrix();
-        glTranslatef(par.p.x, par.p.y, par.p.z);
-        glutSolidSphere(0.05, 10, 10);
-        glPopMatrix();
+        // Source for push/pop: http://www.swiftless.com/tutorials/opengl/pop_and_push_matrices.html
+
+        glPushMatrix(); // Set where to start the current object transformations
+        glTranslatef(par.p.x, par.p.y, par.p.z); // Multiply current matrix by a translation matrix
+        glutSolidSphere(0.05, 10, 10); // Render a solid sphere
+        glPopMatrix(); // End the current object transformations
+        i++;
     }
     
     glPopAttrib();

@@ -14,6 +14,7 @@
 #ifndef PARTICLES_H
 #define PARTICLES_H
 
+#include <iostream>
 #include <glm/glm.hpp>
 #include <vector>
 #if defined(__APPLE_CC__)
@@ -27,7 +28,8 @@ class Particles {
 public:
     Particles();
     void render() const;
-    void step(){} // simulate one frame
+    void reset();
+    void step(); // simulate one frame
 private:
     struct Particle
     {

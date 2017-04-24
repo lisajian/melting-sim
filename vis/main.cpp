@@ -1,4 +1,4 @@
-#define OUTPUT_ANIMATION 1
+#define OUTPUT_ANIMATION 0
 
 #include <stdlib.h>
 #include <stdio.h>

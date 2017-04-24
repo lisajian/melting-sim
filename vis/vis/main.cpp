@@ -1,4 +1,4 @@
-#define OUTPUT_ANIMATION 0
+#define OUTPUT_ANIMATION 1
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -54,12 +54,15 @@ void mouse(int button, int state, int x, int y);
 
 void motion(int x, int y);
 
-void keyboard(unsigned char c, int x, int y)
-{
-    switch(c)
-    {
-    case 'o' :
-        break;
+void keyboard(unsigned char c, int x, int y) {
+    switch(c) {
+        // TODO: doesn't reset when you press 'r'
+        case 'r' :
+            particles.reset();
+            std::cout << "PRESSED" << std::endl;
+            break;
+        default:
+            break;
     }
 }
 

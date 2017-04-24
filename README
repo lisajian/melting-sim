@@ -1,0 +1,6 @@
+- Download GLM header library and move glm/ into vis/vis/.
+- May need to download opencv
+- To run the simulation, run the following commands in vis/vis/
+	$ make vis_osx (or make vis)
+	$ ./sim
+
