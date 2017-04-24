@@ -50,8 +50,8 @@ void Particles::step() {
         if (v[1] < -2) {
             continue;
         }
-        v += p.forces / (double) p.mass;
-        p.p = v;
+        p.p += p.v;
+        p.v += p.forces / (double) p.mass;
         bbox.collides(p);
     }
 }

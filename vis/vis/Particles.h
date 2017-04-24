@@ -17,21 +17,21 @@
 #include <iostream>
 #include "bbox.h"
 #include "particle.h"
-#include <glm/glm.hpp>
+// #include <glm/glm.hpp>
 #include <vector>
-#if defined(__APPLE_CC__)
-#include <GLUT/glut.h>
-#else
-#include <GL/glut.h>
-#include <math.h>
-#endif
+// #if defined(__APPLE_CC__)
+// #include <GLUT/glut.h>
+// #else
+// #include <GL/glut.h>
+// #include <math.h>
+// #endif
 
-struct Particle;
+// struct Particle;
 
 class Particles {
     public:
         Particles();
-        Particles(BBox b) : bbox(b) {} // TODO: Particles don't need to know about bounding box...
+        // Particles(BBox b) : bbox(b) {} // TODO: Particles don't need to know about bounding box...
 
         void render() const;
         void reset();
