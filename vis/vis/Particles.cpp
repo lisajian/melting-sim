@@ -45,81 +45,102 @@ void Particles::reset() {
 
 // Single update step for all particles
 void Particles::step() {
+    // Generic time step update
     for (auto &p : particles) {
-        p.vdt = p.curr_pos - p.last_pos;
-        p.new_vdt = p.vdt;
-    }
-
-    for (auto &p1 : particles) {
-        for (auto &p2 : particles) {
-            if (&p1 != &p2) {
-                // std::cout << "---------------------------------------------" << std::endl;
-                // std::cout << "p1 velocity before: " << std::endl;
-                // std::cout << p1.vdt.x << std::endl;
-                // std::cout << p1.vdt.y << std::endl;
-                // std::cout << p1.vdt.z << std::endl;
-                // std::cout << "p2 velocity before: " << std::endl;
-                // std::cout << p2.vdt.x << std::endl;
-                // std::cout << p2.vdt.y << std::endl;
-                // std::cout << p2.vdt.z << std::endl;
-                if (p1.particle_collide(p2)) {
-                    // std::cout << "===============" << std::endl;
-                    // std::cout << glm::length(p1.curr_pos - p2.curr_pos) << std::endl;
-                    // std::cout << p1.curr_pos.x << std::endl;
-                    // std::cout << p1.curr_pos.y << std::endl;
-                    // std::cout << p1.curr_pos.z << std::endl;
-                    // std::cout << p2.curr_pos.x << std::endl;
-                    // std::cout << p2.curr_pos.y << std::endl;
-                    // std::cout << p2.curr_pos.z << std::endl;
-                    // std::cout << "===============" << std::endl;
-                    // std::cout << "p1 velocity after: " << std::endl;
-                    // std::cout << p1.vdt.x << std::endl;
-                    // std::cout << p1.vdt.y << std::endl;
-                    // std::cout << p1.vdt.z << std::endl;
-                    // std::cout << "p2 velocity after: " << std::endl;
-                    // std::cout << p2.vdt.x << std::endl;
-                    // std::cout << p2.vdt.y << std::endl;
-                    // std::cout << p2.vdt.z << std::endl;
-                }
-            }
-        }
-    }
-
-    for (auto &p : particles) {
-        // Use Verlett integration
-        double d = 0.05;
-        p.vdt = p.new_vdt;
-        // p.vdt = p.curr_pos - p.last_pos;
-        // std::cout << "Before adjustment " << p.vdt.y << std::endl;
-        bool c = bbox.collides(p);
-
-        glm::dvec3 new_pos = p.curr_pos + (1 - d) * p.vdt + (p.forces / (double) p.mass); // Acceleration portion is doing weird things
+        p.vdt = p.vdt + p.forces / (double) p.mass;
         p.last_pos = p.curr_pos;
-        p.curr_pos = new_pos;
-        // if (c && p.curr_pos.y < -2) {
-        //     std::cout << "Not adjusted" << std::endl;
-        //     std::cout << p.curr_pos.y << std::endl;
-        //     std::cout << p.forces.y << std::endl;
-        // }
-        // p.last_pos = p.curr_pos;
-        // p.curr_pos += p.v;
-        // p.v += p.forces / (double) p.mass;
-        // bbox.collides(p);
+        p.curr_pos = p.curr_pos + p.vdt;
+        bbox.collides(p);
     }
 
+    // Get neighbors. Distance between point centers is hardcoded
     for (auto &p1 : particles) {
-        p1.adjustment_vec = glm::dvec3(0, 0, 0);
+        p1.neighbors = std::vector<Particle>();
         for (auto &p2 : particles) {
-            if (&p1 != &p2) {
-                p1.particle_adjust(p2);
+            if (&p1 != &p2 && glm::length(p1.curr_pos - p2.curr_pos) < 0.1) {
+                p1.neighbors.push_back(p2);
             }
         }
-    }
-
-    for (auto &p : particles) {
-        p.curr_pos += p.adjustment_vec;
     }
 }
+
+// // Single update step for all particles
+// void Particles::step() {
+//     for (auto &p : particles) {
+//         p.vdt = p.curr_pos - p.last_pos;
+//         p.new_vdt = p.vdt;
+//     }
+
+//     for (auto &p1 : particles) {
+//         for (auto &p2 : particles) {
+//             if (&p1 != &p2) {
+//                 // std::cout << "---------------------------------------------" << std::endl;
+//                 // std::cout << "p1 velocity before: " << std::endl;
+//                 // std::cout << p1.vdt.x << std::endl;
+//                 // std::cout << p1.vdt.y << std::endl;
+//                 // std::cout << p1.vdt.z << std::endl;
+//                 // std::cout << "p2 velocity before: " << std::endl;
+//                 // std::cout << p2.vdt.x << std::endl;
+//                 // std::cout << p2.vdt.y << std::endl;
+//                 // std::cout << p2.vdt.z << std::endl;
+//                 if (p1.particle_collide(p2)) {
+//                     // std::cout << "===============" << std::endl;
+//                     // std::cout << glm::length(p1.curr_pos - p2.curr_pos) << std::endl;
+//                     // std::cout << p1.curr_pos.x << std::endl;
+//                     // std::cout << p1.curr_pos.y << std::endl;
+//                     // std::cout << p1.curr_pos.z << std::endl;
+//                     // std::cout << p2.curr_pos.x << std::endl;
+//                     // std::cout << p2.curr_pos.y << std::endl;
+//                     // std::cout << p2.curr_pos.z << std::endl;
+//                     // std::cout << "===============" << std::endl;
+//                     // std::cout << "p1 velocity after: " << std::endl;
+//                     // std::cout << p1.vdt.x << std::endl;
+//                     // std::cout << p1.vdt.y << std::endl;
+//                     // std::cout << p1.vdt.z << std::endl;
+//                     // std::cout << "p2 velocity after: " << std::endl;
+//                     // std::cout << p2.vdt.x << std::endl;
+//                     // std::cout << p2.vdt.y << std::endl;
+//                     // std::cout << p2.vdt.z << std::endl;
+//                 }
+//             }
+//         }
+//     }
+
+//     for (auto &p : particles) {
+//         // Use Verlett integration
+//         double d = 0.05;
+//         p.vdt = p.new_vdt;
+//         // p.vdt = p.curr_pos - p.last_pos;
+//         // std::cout << "Before adjustment " << p.vdt.y << std::endl;
+//         bool c = bbox.collides(p);
+
+//         glm::dvec3 new_pos = p.curr_pos + (1 - d) * p.vdt + (p.forces / (double) p.mass); // Acceleration portion is doing weird things
+//         p.last_pos = p.curr_pos;
+//         p.curr_pos = new_pos;
+//         // if (c && p.curr_pos.y < -2) {
+//         //     std::cout << "Not adjusted" << std::endl;
+//         //     std::cout << p.curr_pos.y << std::endl;
+//         //     std::cout << p.forces.y << std::endl;
+//         // }
+//         // p.last_pos = p.curr_pos;
+//         // p.curr_pos += p.v;
+//         // p.v += p.forces / (double) p.mass;
+//         // bbox.collides(p);
+//     }
+
+//     for (auto &p1 : particles) {
+//         p1.adjustment_vec = glm::dvec3(0, 0, 0);
+//         for (auto &p2 : particles) {
+//             if (&p1 != &p2) {
+//                 p1.particle_adjust(p2);
+//             }
+//         }
+//     }
+
+//     for (auto &p : particles) {
+//         p.curr_pos += p.adjustment_vec;
+//     }
+// }
 
 // 
 void Particles::render() const

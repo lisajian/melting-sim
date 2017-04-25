@@ -17,7 +17,7 @@ struct Particle {
 
     Particle(glm::dvec3 init_pos)
         : curr_pos(init_pos) {
-        	last_pos = (init_pos + glm::dvec3(0.1, 0.05, 0.2)); // TODO: Need a better way of getting initial vel
+        	last_pos = (init_pos); // TODO: Need a better way of getting initial vel
         }
 
     // Particle(glm::dvec3 init_pos, glm::dvec3 init_velo)
@@ -29,6 +29,7 @@ struct Particle {
     glm::dvec3 new_vdt;
     glm::dvec3 forces;
     glm::dvec3 adjustment_vec;
+    std::vector<Particle> neighbors;
     float mass = 1000; // TODO: Masses shouldn't be this heavy...
 
     // Collides with other particle, assumes other particle has same mass
