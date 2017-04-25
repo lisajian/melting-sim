@@ -37,6 +37,7 @@ struct BBox {
             double d = 0.05;
             glm::dvec3 next_step = p.curr_pos + (1 - d) * p.vdt + (p.forces / (double) p.mass);
             bool c = false;
+            double clamp = 0.005;
 
             // Collided with bounding box; make adjustment in position
             // TODO: Dampening doesn't look right
@@ -59,6 +60,20 @@ struct BBox {
                 // p.last_pos = p.curr_pos;
                 // p.curr_pos.z *= -1;
                 c = true;
+            }
+
+            double min_dist = 0.01;
+            // Stop the particle if the velocity is small and it's close to
+            // a face of the bounding box
+            // TODO: Do this for all faces 
+            if (glm::length(p.vdt) < clamp && (std::abs(next_step.y - b_min.y) < min_dist ||
+                                               std::abs(next_step.y - b_max.y) < min_dist ||
+                                               std::abs(next_step.x - b_min.x) < min_dist ||
+                                               std::abs(next_step.x - b_max.x) < min_dist ||
+                                               std::abs(next_step.z - b_min.z) < min_dist ||
+                                               std::abs(next_step.z - b_max.z) < min_dist)) {
+                p.vdt = glm::dvec3(0, 0, 0);
+                p.forces = glm::dvec3(0, 0, 0);
             }
             return c;
         }

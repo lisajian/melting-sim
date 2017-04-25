@@ -23,9 +23,9 @@ Particles::Particles() {
 void Particles::reset() {
     // Number of particles in each dimension
     // std::cout << "MADE" << std::endl;
-    int nx = 1;
+    int nx = 10;
     int ny = 1;
-    int nz = 1;
+    int nz = 10;
     float y_offset = 1;
     float z_offset = -2;
     float d = 0.1;
@@ -49,14 +49,16 @@ void Particles::step() {
         // Use Verlett integration
         double d = 0.05;
         p.vdt = p.curr_pos - p.last_pos;
-        std::cout << "Before adjustment " << p.vdt.y << std::endl;
+        // std::cout << "Before adjustment " << p.vdt.y << std::endl;
         bool c = bbox.collides(p);
-        glm::dvec3 new_pos = p.curr_pos + (1 - d) * p.vdt + (p.forces / (double) p.mass);
+
+        glm::dvec3 new_pos = p.curr_pos + (1 - d) * p.vdt + (p.forces / (double) p.mass); // Acceleration portion is doing weird things
         p.last_pos = p.curr_pos;
         p.curr_pos = new_pos;
         if (c && p.curr_pos.y < -2) {
             std::cout << "Not adjusted" << std::endl;
             std::cout << p.curr_pos.y << std::endl;
+            std::cout << p.forces.y << std::endl;
         }
         // p.last_pos = p.curr_pos;
         // p.curr_pos += p.v;
