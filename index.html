@@ -1,83 +1,49 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-<style>
-  body {
-    padding: 100px;
-    width: 800px;
-    margin: auto;
-    text-align: left;
-    font-weight: 300;
-    font-family: 'Open Sans', sans-serif;
-    color: #121212;
-  }
-  h1, h2, h3, h4 {
-    font-family: 'Source Sans Pro', sans-serif;
-  }
-</style>
-<title>CS 184 Rasterizer</title>
-<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
-</head>
+  <head>
+    <style>
+      body {
+        padding: 100px;
+        width: 800px;
+        margin: auto;
+        text-align: left;
+        font-weight: 300;
+        font-family: 'Open Sans', sans-serif;
+        color: #121212;
+      }
+      h1, h2, h3, h4 {
+        font-family: 'Source Sans Pro', sans-serif;
+      }
+      .container {
+        text-align: center;
+      }
+      .proj__button {
+        padding: 15px 20px;
+        background: #5C6BC0;
+        display: inline-block;
+        width: 150px;
+        margin: 10px 0;
+      }
+      a {
+        text-decoration: none;
+        color: white;
+      }
+    </style>
+    <title>CS 184 Final Project Sites</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+  </head>
 
 
-<body>
+  <body>
+    <div class="container">
+      <a target="_blank" href="https://ellenhong.github.io/cs184-projproposal/">
+        <div class="proj__button">Project Proposal</div>
+      </a>
+      <a target="_blank" href="https://ellenhong.github.io/cs184-milestone/">
+        <div class="proj__button">Milestone</div>
+      </a>
+    </div>
+  </body>
 
-<h1 align="middle">3D Melting Simulation, Project Proposal</h1>
-<h3 align="middle">Partners: Ellen Hong, Lisa Jian</h3>
-
-<br>
-
-<div>
-
-<h2>Summary</h2>
-<p>An exploration of bunny meltation. We will be simulating the phase change from solid to liquid using an augmented material point method (MPM). This method essentially applies the necessary stresses/forces (via a lot of math) to update the position of each particle of a marker-and-cell (MAC) grid at each time step.</p>
-
-<h2>Project Description</h2>
-<p>Simulating the physical behavior of objects is a common issue in computer graphics. In particular, achieving an accurate simulation of materials undergoing phase transitions (i.e. melting, solidifying, etc.) is difficult to do efficiently, since common methods (such as MPM) cannot model both liquid and solid states. The augmented MPM method we will be using employs a combination of a particle-based and grid system, as well as the application of a number of different techniques that update the particle positions based on physics and heat properties. The challenge of solving this definitely comes from not only understanding all of the math and implementing it, but also in ensuring that we are able to (hopefully) come up with enough timestep frames of our simulation to render an animation in Mitsuba (software we are also unfamiliar with).</p>
-
-<h2>Goals and Deliverables</h2>
-<p>
-    <ol>
-        <li>What we plan to deliver</li>
-            <p>We plan to achieve a 3-dimensional animation of the melting of a particle representation of a bunny. This may be in the form of a couple of (potentially slow-rendered) frames of the animation, since we may not be able to achieve the speedup required to render the animation in real-time.</p>
-        <li>What we hope to deliver</li>
-            <p>We hope to achieve a “real-time” 3-dimensional animation of a cold chocolate bunny being melted by hot liquid chocolate. Ideally this would be an animation from start to finish, of a bunny rendered with glossy chocolate material. </p>
-    </ol>
-</p>
-
-<h2>Schedule</h2>
-<p>
-    <ul>
-        <li>By 4/14</li>
-            <p>Make framework for project using Mitsuba (create skeleton files and figure out how to render/animate them)</p>
-        <li>By 4/21 (milestone due!)</li>
-            <p>Implement algo discussed in [1] and get a few frames of melting bunny</p>
-        <li>By 4/28</li>
-            <p>Speed up animation (hopefully we’ll have an animation)</p>
-        <li>By 5/3 (presentation due!)</li>
-            <p>Complete writeup and presentation</p>
-    </ul>
-</p>
-
-<h2>Resources (Articles)</h2>
-<p>
-    <ol>
-        <li><a href="http://alexey.stomakhin.com/research/siggraph2014_melt.pdf">Augmented MPM for Phase-Change and Varied Materials</a> (from final project suggestions)</li>
-        <li><a href="http://www.freepatentsonline.com/20150186565.pdf">Augmented Material Point Method For Simulating Phase Changeds and Varied Materials</a> (patent of [1])</li>
-        <li><a href="http://www.cs.ubc.ca/~rbridson/docs/zhu-siggraph05-sandfluid.pdf">Animating Sand as a Fluid</a></li>
-        <li><a href="http://files.cnblogs.com/files/mincomp/Grid-based_Fluid_Simulation.pdf">Grid-based Fluid Simulation</a></li>
-    </ol>
-</p>
-
-<h2>Resources (Other)</h2>
-<p>
-    <ol>
-        <li>Mitsuba rendering system</li>
-        <li>ASUS GAMING GeForce GTX 1060</li>
-    </ol>
-</p>
-
-
-</body>
 </html>
