@@ -66,6 +66,7 @@ struct BBox {
             // Stop the particle if the velocity is small and it's close to
             // a face of the bounding box
             // TODO: Do this for all faces 
+            // TODO: QUESTION: Do we actually need to do this for all faces?
             if (glm::length(p.vdt) < clamp && (std::abs(next_step.y - b_min.y) < min_dist ||
                                                std::abs(next_step.y - b_max.y) < min_dist ||
                                                std::abs(next_step.x - b_min.x) < min_dist ||
