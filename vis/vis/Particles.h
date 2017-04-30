@@ -34,11 +34,14 @@ class Particles {
 
         void render() const;
         void reset();
-        void step(); // simulate one frame
+        void step(double dt, double h, double rho, double eps, double k, \
+                  double const_n, double del_q, int solverIterations); // simulate one frame
         void find_neighboring(double h, Particle &p);
     private:
         std::vector<Particle> particles;
         BBox bbox;
+        double default_mass;
+        std::vector<glm::dvec3> default_forces;
 };
 
 #endif /* PARTICLES_H */

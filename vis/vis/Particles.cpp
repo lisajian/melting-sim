@@ -16,6 +16,8 @@
 
 Particles::Particles() {
     bbox = BBox(glm::dvec3(-2, -2, -2), glm::dvec3(2, 2, 2));
+    default_forces = {glm::dvec3(0, -9.8, 0)};
+    default_mass = 10000;
     reset();
 }
 
@@ -38,6 +40,7 @@ void Particles::reset() {
             {
                 Particle par(glm::dvec3((x+0.5-nx*0.5)*d + z_offset, (y+0.5)*d-1.0 + y_offset, (z+0.5-nz*0.5)*d));
                 par.forces = glm::dvec3(0.0, -9.8, 0.0); // TODO: Handle external forces better. This is gravity
+                par.mass = default_mass;
                 particles.push_back(par);
             }
         }
@@ -45,16 +48,16 @@ void Particles::reset() {
 }
 
 // Single update step for all particles
-void Particles::step() {
-    double h = 3; // TODO: Remove hardcoding
-
+void Particles::step(double dt, double h, double rho, double eps, double k, \
+                     double const_n, double del_q, int solverIterations) {
     // Generic time step update
     for (auto &p : particles) {
         p.vdt = p.vdt + p.forces / (double) p.mass;
-        p.last_pos = p.curr_pos;
         p.curr_pos = p.curr_pos + p.vdt;
-        // bbox.collides(p); // TODO: comment out
+        bbox.collides(p); // TODO: comment out
     }
+
+    return; // TODO: remove this
 
     // Get neighbors. Distance between point centers is hardcoded
     // double inf = std::numeric_limits<double>::infinity();
@@ -62,17 +65,6 @@ void Particles::step() {
         find_neighboring(h, p);
     }
 
-    // Increase solver iterations as necessary
-    double rho = 1; // TODO: Move this default rho elsewhere
-    double eps = 0.05; // TODO: Move this default elsewhere
-
-    // Constants used for s_corr
-    // TODO: Move these elsewhere
-    double k = 0.1;
-    double const_n = 4.0;
-    double del_q = 0.1 * h;
-
-    int solverIterations = 1;
     for (int i = 0; i < solverIterations; i++) {
         // Determine lambda_i
         for (auto &p : particles) {

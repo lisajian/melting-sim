@@ -27,7 +27,7 @@ const int render_step = 1;
 int mx, my;
 float _zoom = 1.0;
 
-Particles particles;
+// Particles particles;
 FluidSim fluidSim;
 
 void display(void);
@@ -39,7 +39,7 @@ void idle(void) {
     //     particles.step();
     //     glutPostRedisplay();
     // }
-    particles.step();
+    fluidSim.step();
     glutPostRedisplay();
     if(frame/render_step >= 300) {
         return;
@@ -66,7 +66,7 @@ void motion(int x, int y);
 void keyboard(unsigned char key, int x, int y) {
     switch(key) {
         case 'r' :
-            particles.reset();
+            fluidSim.reset();
             break;
         case '=':
             _zoom += 0.3;
@@ -118,7 +118,7 @@ void display(void) {
             0, 1, 0);
     glScalef(_zoom,_zoom,_zoom);
     
-    particles.render();
+    fluidSim.render();
 
     glutSwapBuffers();
 }

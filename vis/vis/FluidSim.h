@@ -14,8 +14,6 @@ struct FluidSim {
     // Default settings
     FluidSim() {
         dt = 0.5;
-        mass = 1;
-        default_forces = {glm::dvec3(0, -9.8, 0)};
         rho = 1;
         h = 3;
         k = 0.1;
@@ -23,14 +21,11 @@ struct FluidSim {
         n = 4;
         eps = 0.05;
         all_particles = Particles();
+        solverIterations = 1;
     }
 
     // Size of time step
     double dt;
-    // Default masses for each particle
-    double mass;
-    // Default external forces
-    std::vector<glm::dvec3> default_forces;
     // Default rest density
     double rho;
     // Used in all smoothing calculations, h
@@ -46,10 +41,13 @@ struct FluidSim {
     double n;
     // Used in determining lambda_i's, relaxation term
     double eps;
+    // Used in large simulation loop
+    int solverIterations;
     Particles all_particles;
 
     void reset();
     void step();
+    void render();
 };
 
 #endif FLUID_SIM
