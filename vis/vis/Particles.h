@@ -34,7 +34,8 @@ class Particles {
 
         void render() const;
         void reset();
-        void step(); // simulate one frame
+        void step(double dt, double h, double rho, double eps, double k, \
+                  double const_n, double del_q, int solverIterations); // simulate one frame
         void find_neighboring(double h, Particle &p);
         void build_spatial_map();
         float hash_position(glm::dvec3 pos);
@@ -42,6 +43,8 @@ class Particles {
         std::vector<Particle> particles;
         BBox bbox;
         std::unordered_map<float, std::vector<Particle *> *> map;
+        double default_mass;
+        std::vector<glm::dvec3> default_forces;
 };
 
 #endif /* PARTICLES_H */
