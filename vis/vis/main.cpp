@@ -23,6 +23,7 @@ int height = 800;
 int frame = 0;
 const int render_step = 3;
 int mx, my;
+float _zoom = 1.0;
 
 Particles particles;
 
@@ -53,12 +54,21 @@ void mouse(int button, int state, int x, int y);
 
 void motion(int x, int y);
 
-void keyboard(unsigned char c, int x, int y) {
-    switch(c) {
+void keyboard(unsigned char key, int x, int y) {
+    switch(key) {
         // TODO: doesn't reset when you press 'r'
         case 'r' :
             particles.reset();
             std::cout << "PRESSED" << std::endl;
+            break;
+        case '=':
+            _zoom += 0.3;
+            break;
+        case '-':
+            _zoom -= 0.3;
+            if (_zoom <= 0.1) {
+                _zoom = 0.1;
+            }
             break;
         default:
             break;
@@ -77,8 +87,8 @@ int main(int argc, char** argv) {
     glutIdleFunc(idle);
     glutMouseFunc(mouse);
     glutMotionFunc(motion);
-    glutMainLoop();
     glutKeyboardFunc(keyboard);
+    glutMainLoop();
 
     return EXIT_SUCCESS;
 }
@@ -99,6 +109,7 @@ void display(void) {
     gluLookAt(dist*sin(phi)*cos(theta), dist*cos(phi), dist*sin(phi)*sin(theta),
             0, 0, 0, 
             0, 1, 0);
+    glScalef(_zoom,_zoom,_zoom);
     
     particles.render();
 
