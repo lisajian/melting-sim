@@ -3,6 +3,7 @@
 #ifndef PARTICLE_H
 #define PARTICLE_H
 
+#include <vector>
 #include <glm/glm.hpp>
 #if defined(__APPLE_CC__)
 #include <GLUT/glut.h>

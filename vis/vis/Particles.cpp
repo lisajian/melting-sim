@@ -23,6 +23,7 @@ Particles::Particles() {
 void Particles::reset() {
     // Number of particles in each dimension
     // std::cout << "MADE" << std::endl;
+    int num = 0;
     int nx = 5;
     int ny = 5;
     int nz = 5;
@@ -50,7 +51,7 @@ void Particles::step() {
         p.vdt = p.vdt + p.forces / (double) p.mass;
         p.last_pos = p.curr_pos;
         p.curr_pos = p.curr_pos + p.vdt;
-        bbox.collides(p);
+        // bbox.collides(p);
     }
 
     // Get neighbors. Distance between point centers is hardcoded

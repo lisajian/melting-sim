@@ -16,22 +16,23 @@ void Particles::step() {
   build_spatial_map();
   // for each particle: 
   for (auto &p : particles) {
-    find_neighboring(d, p);
+    find_neighboring(d, p); // d = support
 
     // for # iterations n:
       double p_i = 0;
       double w_p = 0;
       double w_s = 0;
-      double grad_c = 0;
+      // double grad_c = 0;
       // for each of neighboring particles
       for (auto &n : p.neighbors) {
         // calculate p_i (given by SPH density estimator)
         double r = p.curr_pos - n.curr_pos;
         double r2 = (r.x * r.x + r.y * r.y + r.z * r.z);
-        if (0 <= sqrt(r2) && sqrt(r2) <= d) {
+        // if (0 <= sqrt(r2) && sqrt(r2) <= d) {
+        if (r2 <= d * d) {
           // calculate poly6 kernel
-          w_p = pow((d * d - r * r), 3);
-          w_p *= 315 / (64 * PI * pow(d, 9));
+          w_p = pow((d * d - r2), 3);
+          w_p *= 315 / (64 * PI * pow(d, 9)); // This can be moved out of the for loop
           // calculate spiky kernel 
           w_s = r / (sqrt(r2)) * pow((d - sqrt(r2)), 2);
           w_s *= -45 / (PI * pow(d, 6));
@@ -42,13 +43,14 @@ void Particles::step() {
         p_i += n.mass * w;
 
         // gradient of constraint function
-        grad_c += 1 / p0 * w_s;
+        // grad_c += 1 / p0 * w_s;
+        // TODO: Gradient of constraint function will be a vector
       }
       // constraint function C_i(p1,...pn):
       double c = (p_i / p0) - 1;
 
       // calculate lambda_i
-      double lambda_i = -c / ()
+      double lambda_i = -c / () // TODO: how to calculate grad C??
   }
 }
 
