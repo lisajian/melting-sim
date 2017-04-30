@@ -36,9 +36,12 @@ class Particles {
         void reset();
         void step(); // simulate one frame
         void find_neighboring(double h, Particle &p);
+        void build_spatial_map();
+        float hash_position(glm::dvec3 pos);
     private:
         std::vector<Particle> particles;
         BBox bbox;
+        std::unordered_map<float, std::vector<Particle *> *> map;
 };
 
 #endif /* PARTICLES_H */
