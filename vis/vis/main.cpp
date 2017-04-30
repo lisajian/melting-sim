@@ -21,7 +21,7 @@ float dist = 2.5;
 int width = 800;
 int height = 800;
 int frame = 0;
-const int render_step = 3;
+const int render_step = 1;
 int mx, my;
 float _zoom = 1.0;
 
@@ -32,12 +32,18 @@ void display(void);
 void reshape(int width, int height);
 
 void idle(void) {
+    // if (frame/render_step < 300) {
+    //     particles.step();
+    //     glutPostRedisplay();
+    // }
     particles.step();
     glutPostRedisplay();
-    if(frame/render_step >= 300)
+    if(frame/render_step >= 300) {
         return;
+    }
     if(frame%render_step == 0)
     {
+        // std::cout << frame << std::endl;
         #if OUTPUT_ANIMATION
         cv::Mat3b image(height, width);
         glReadPixels(0, 0, width, height, GL_BGR, GL_UNSIGNED_BYTE, image.data);
@@ -56,7 +62,6 @@ void motion(int x, int y);
 
 void keyboard(unsigned char key, int x, int y) {
     switch(key) {
-        // TODO: doesn't reset when you press 'r'
         case 'r' :
             particles.reset();
             break;

@@ -15,8 +15,7 @@
 #include <limits>
 
 Particles::Particles() {
-    bbox = BBox(glm::dvec3(-2, -2, -2), glm::dvec3(2, 2, 2)); // TODO: remove janky default
-    // particles
+    bbox = BBox(glm::dvec3(-2, -2, -2), glm::dvec3(2, 2, 2));
     reset();
 }
 
@@ -27,7 +26,7 @@ void Particles::reset() {
     int num = 0;
     int nx = 2;
     int ny = 1;
-    int nz = 2;
+    int nz = 1;
     float y_offset = 1;
     float z_offset = -2;
     float d = 0.1;
@@ -54,7 +53,7 @@ void Particles::step() {
         p.vdt = p.vdt + p.forces / (double) p.mass;
         p.last_pos = p.curr_pos;
         p.curr_pos = p.curr_pos + p.vdt;
-        // bbox.collides(p);
+        // bbox.collides(p); // TODO: comment out
     }
 
     // Get neighbors. Distance between point centers is hardcoded

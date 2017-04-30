@@ -26,7 +26,6 @@
 // #include <math.h>
 // #endif
 
-// struct Particle;
 
 class Particles {
     public:
