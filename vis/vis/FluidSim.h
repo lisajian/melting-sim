@@ -1,6 +1,8 @@
 #ifndef FLUID_SIM
 #define FLUID_SIM
 
+#include "Particles.h"
+
 #if defined(__APPLE_CC__)
 #include <GLUT/glut.h>
 #else
@@ -9,10 +11,24 @@
 #endif
 
 struct FluidSim {
+    // Default settings
+    FluidSim() {
+        dt = 0.5;
+        mass = 1;
+        default_forces = {glm::dvec3(0, -9.8, 0)};
+        rho = 1;
+        h = 3;
+        k = 0.1;
+        del_q = 0.1 * h;
+        n = 4;
+        eps = 0.05;
+        all_particles = Particles();
+    }
+
     // Size of time step
-    double dt = 0.5;
+    double dt;
     // Default masses for each particle
-    double mass = 1;
+    double mass;
     // Default external forces
     std::vector<glm::dvec3> default_forces;
     // Default rest density
@@ -30,10 +46,9 @@ struct FluidSim {
     double n;
     // Used in determining lambda_i's, relaxation term
     double eps;
+    Particles all_particles;
 
-    // Should just call particles.reset()
     void reset();
-    // Calls step particles.step() with appropriate params
     void step();
 };
 

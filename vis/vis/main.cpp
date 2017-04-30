@@ -4,6 +4,8 @@
 #include <stdio.h>
 
 #include "Particles.h"
+#include "FluidSim.h"
+#include "FluidSim.cpp"
 
 #if OUTPUT_ANIMATION
 #include <opencv2/opencv.hpp>
@@ -26,6 +28,7 @@ int mx, my;
 float _zoom = 1.0;
 
 Particles particles;
+FluidSim fluidSim;
 
 void display(void);
 
