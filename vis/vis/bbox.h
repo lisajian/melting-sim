@@ -34,7 +34,7 @@ struct BBox {
         // time step and adjusts velocity vector accordingly
         bool collides(Particle &p) {
             // TODO: Have a separate method for verlett integration
-            double d = 0.05;
+            double d = 0.25;
             glm::dvec3 next_step = p.curr_pos + p.forces / (double) p.mass + p.vdt;
             bool c = false;
             double clamp = 0.005;

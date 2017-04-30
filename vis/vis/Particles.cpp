@@ -12,9 +12,9 @@
  */
 
 #include "Particles.h"
+#include <limits>
 
 Particles::Particles() {
-    // std::cout << "MADE" << std::endl;
     bbox = BBox(glm::dvec3(-2, -2, -2), glm::dvec3(2, 2, 2)); // TODO: remove janky default
     reset();
 }
@@ -22,11 +22,10 @@ Particles::Particles() {
 // Resets all particles back to default state.
 void Particles::reset() {
     // Number of particles in each dimension
-    // std::cout << "MADE" << std::endl;
     int num = 0;
-    int nx = 5;
-    int ny = 5;
-    int nz = 5;
+    int nx = 2;
+    int ny = 1;
+    int nz = 2;
     float y_offset = 1;
     float z_offset = -2;
     float d = 0.1;
@@ -46,6 +45,8 @@ void Particles::reset() {
 
 // Single update step for all particles
 void Particles::step() {
+    double h = 3; // TODO: Remove hardcoding
+
     // Generic time step update
     for (auto &p : particles) {
         p.vdt = p.vdt + p.forces / (double) p.mass;
@@ -55,95 +56,88 @@ void Particles::step() {
     }
 
     // Get neighbors. Distance between point centers is hardcoded
-    for (auto &p1 : particles) {
-        p1.neighbors = std::vector<Particle>();
-        for (auto &p2 : particles) {
-            if (&p1 != &p2 && glm::length(p1.curr_pos - p2.curr_pos) < 0.1) {
-                p1.neighbors.push_back(p2);
+    // double inf = std::numeric_limits<double>::infinity();
+    for (auto &p : particles) {
+        find_neighboring(h, p);
+    }
+
+    // Increase solver iterations as necessary
+    double rho = 1; // TODO: Move this default rho elsewhere
+    double eps = 0.05; // TODO: Move this default elsewhere
+
+    // Constants used for s_corr
+    // TODO: Move these elsewhere
+    double k = 0.1;
+    double n = 4.0;
+    double del_q = 0.1 * h;
+
+    int solverIterations = 1;
+    for (int i = 0; i < solverIterations; i++) {
+        // Determine lambda_i
+        for (auto &p : particles) {
+            // Use poly6 kernel for rho (pressure)
+            double rho_i = 0.0;
+            for (auto &n : p.neighbors) {
+                glm::dvec3 diff = p.curr_pos - n.curr_pos;
+                rho_i += std::pow(h * h - glm::dot(diff, diff), 3.0);
             }
+            rho_i *= 315.0 / (64.0 * M_PI * std::pow(h, 9.0));
+            p.C = rho_i / rho - 1.0;
+
+            // Use spiky kernel for gradients
+            glm::dvec3 grad_i_W = glm::dvec3(0, 0, 0);
+            double grad_j_W = 0.0;
+            for (auto &n : p.neighbors) {
+                glm::dvec3 diff = p.curr_pos - n.curr_pos;
+                double len = glm::length(diff);
+                glm::dvec3 intermed = (pow(h - len, 2.0) / len) * diff;
+                intermed *= - 45.0 / (M_PI * std::pow(h, 6.0));
+                
+                grad_i_W += intermed;
+                grad_j_W += glm::dot(intermed, intermed);
+            }
+            p.lambda = - p.C / (grad_j_W + glm::dot(grad_i_W, grad_i_W) + eps);
+        }
+        // Determine delta p
+        for (auto &p : particles) {
+            glm::dvec3 new_del_p = glm::dvec3(0, 0, 0);
+            for (auto &n : p.neighbors) {
+                glm::dvec3 diff = p.curr_pos - n.curr_pos;
+
+                // Get the gradient
+                double len = glm::length(diff);
+                glm::dvec3 intermed = (pow(h - len, 2.0) / len) * diff;
+                intermed *= - 45.0 / (M_PI * std::pow(h, 6.0));
+
+                // Calculate s_corr using poly6 kernel
+                double s_corr = std::pow(h * h - glm::dot(diff, diff), 3.0);
+                s_corr *= 315.0 / (64.0 * M_PI * std::pow(h, 9.0));
+
+                new_del_p += (p.lambda + n.lambda + s_corr) * intermed;
+            }
+            p.del_p = new_del_p / rho;
+        }
+    }
+
+    for (auto &p : particles) {
+        p.curr_pos += p.del_p;
+        bbox.collides(p);
+    }
+}
+
+// Find all neighbors n of p such that the distance between the
+// centers of n and p is at most h
+void Particles::find_neighboring(double h, Particle &p) {
+    p.neighbors.clear();
+    // Naive way of finding neighbors
+    int j = 0;
+    for (auto &other : particles) {
+        if (&p != &other && glm::length(p.curr_pos - other.curr_pos) <= h) {
+            p.neighbors.push_back(other);
         }
     }
 }
 
-// // Single update step for all particles
-// void Particles::step() {
-//     for (auto &p : particles) {
-//         p.vdt = p.curr_pos - p.last_pos;
-//         p.new_vdt = p.vdt;
-//     }
-
-//     for (auto &p1 : particles) {
-//         for (auto &p2 : particles) {
-//             if (&p1 != &p2) {
-//                 // std::cout << "---------------------------------------------" << std::endl;
-//                 // std::cout << "p1 velocity before: " << std::endl;
-//                 // std::cout << p1.vdt.x << std::endl;
-//                 // std::cout << p1.vdt.y << std::endl;
-//                 // std::cout << p1.vdt.z << std::endl;
-//                 // std::cout << "p2 velocity before: " << std::endl;
-//                 // std::cout << p2.vdt.x << std::endl;
-//                 // std::cout << p2.vdt.y << std::endl;
-//                 // std::cout << p2.vdt.z << std::endl;
-//                 if (p1.particle_collide(p2)) {
-//                     // std::cout << "===============" << std::endl;
-//                     // std::cout << glm::length(p1.curr_pos - p2.curr_pos) << std::endl;
-//                     // std::cout << p1.curr_pos.x << std::endl;
-//                     // std::cout << p1.curr_pos.y << std::endl;
-//                     // std::cout << p1.curr_pos.z << std::endl;
-//                     // std::cout << p2.curr_pos.x << std::endl;
-//                     // std::cout << p2.curr_pos.y << std::endl;
-//                     // std::cout << p2.curr_pos.z << std::endl;
-//                     // std::cout << "===============" << std::endl;
-//                     // std::cout << "p1 velocity after: " << std::endl;
-//                     // std::cout << p1.vdt.x << std::endl;
-//                     // std::cout << p1.vdt.y << std::endl;
-//                     // std::cout << p1.vdt.z << std::endl;
-//                     // std::cout << "p2 velocity after: " << std::endl;
-//                     // std::cout << p2.vdt.x << std::endl;
-//                     // std::cout << p2.vdt.y << std::endl;
-//                     // std::cout << p2.vdt.z << std::endl;
-//                 }
-//             }
-//         }
-//     }
-
-//     for (auto &p : particles) {
-//         // Use Verlett integration
-//         double d = 0.05;
-//         p.vdt = p.new_vdt;
-//         // p.vdt = p.curr_pos - p.last_pos;
-//         // std::cout << "Before adjustment " << p.vdt.y << std::endl;
-//         bool c = bbox.collides(p);
-
-//         glm::dvec3 new_pos = p.curr_pos + (1 - d) * p.vdt + (p.forces / (double) p.mass); // Acceleration portion is doing weird things
-//         p.last_pos = p.curr_pos;
-//         p.curr_pos = new_pos;
-//         // if (c && p.curr_pos.y < -2) {
-//         //     std::cout << "Not adjusted" << std::endl;
-//         //     std::cout << p.curr_pos.y << std::endl;
-//         //     std::cout << p.forces.y << std::endl;
-//         // }
-//         // p.last_pos = p.curr_pos;
-//         // p.curr_pos += p.v;
-//         // p.v += p.forces / (double) p.mass;
-//         // bbox.collides(p);
-//     }
-
-//     for (auto &p1 : particles) {
-//         p1.adjustment_vec = glm::dvec3(0, 0, 0);
-//         for (auto &p2 : particles) {
-//             if (&p1 != &p2) {
-//                 p1.particle_adjust(p2);
-//             }
-//         }
-//     }
-
-//     for (auto &p : particles) {
-//         p.curr_pos += p.adjustment_vec;
-//     }
-// }
-
-// 
 void Particles::render() const
 {
     GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
