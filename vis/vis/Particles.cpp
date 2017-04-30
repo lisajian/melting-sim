@@ -25,9 +25,9 @@ void Particles::reset() {
     // Number of particles in each dimension
     particles.clear();
     int num = 0;
-    int nx = 2;
+    int nx = 5;
     int ny = 1;
-    int nz = 2;
+    int nz = 1;
     float y_offset = 1;
     float z_offset = -2;
     float d = 0.1;
@@ -70,7 +70,7 @@ void Particles::step() {
     // Constants used for s_corr
     // TODO: Move these elsewhere
     double k = 0.1;
-    double n = 4.0;
+    double const_n = 4.0;
     double del_q = 0.1 * h;
 
     int solverIterations = 1;
@@ -113,7 +113,8 @@ void Particles::step() {
 
                 // Calculate s_corr using poly6 kernel
                 double s_corr = std::pow(h * h - glm::dot(diff, diff), 3.0);
-                s_corr *= 315.0 / (64.0 * M_PI * std::pow(h, 9.0));
+                s_corr /= std::pow(h * h - (del_q * del_q), 3.0);
+                s_corr = std::pow(s_corr, const_n) * -1 * k;
 
                 new_del_p += (p.lambda + n.lambda + s_corr) * intermed;
             }
