@@ -59,7 +59,6 @@ void keyboard(unsigned char key, int x, int y) {
         // TODO: doesn't reset when you press 'r'
         case 'r' :
             particles.reset();
-            std::cout << "PRESSED" << std::endl;
             break;
         case '=':
             _zoom += 0.3;

@@ -16,12 +16,14 @@
 
 Particles::Particles() {
     bbox = BBox(glm::dvec3(-2, -2, -2), glm::dvec3(2, 2, 2)); // TODO: remove janky default
+    // particles
     reset();
 }
 
 // Resets all particles back to default state.
 void Particles::reset() {
     // Number of particles in each dimension
+    particles.clear();
     int num = 0;
     int nx = 2;
     int ny = 1;
@@ -79,7 +81,7 @@ void Particles::step() {
             double rho_i = 0.0;
             for (auto &n : p.neighbors) {
                 glm::dvec3 diff = p.curr_pos - n.curr_pos;
-                rho_i += std::pow(h * h - glm::dot(diff, diff), 3.0);
+                rho_i += n.mass * std::pow(h * h - glm::dot(diff, diff), 3.0);
             }
             rho_i *= 315.0 / (64.0 * M_PI * std::pow(h, 9.0));
             p.C = rho_i / rho - 1.0;
