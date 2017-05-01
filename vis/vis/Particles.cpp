@@ -135,12 +135,56 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
 // centers of n and p is at most h
 void Particles::find_neighboring(double h, Particle &p) {
     p.neighbors.clear();
-    // Naive way of finding neighbors
-    for (auto &other : particles) {
-        if (&p != &other && glm::length(p.pred_pos - other.curr_pos) <= h) {
-            p.neighbors.push_back(other);
+    // // Naive way of finding neighbors
+    // int j = 0;
+    // for (auto &other : particles) {
+    //     if (&p != &other && glm::length(p.curr_pos - other.curr_pos) <= h) {
+    //         p.neighbors.push_back(other);
+    //     }
+    // }
+    float hash = hash_position(p.curr_pos);
+    vector<Particle *> *matches = map.at(hash);
+    for (Particle *m : *matches) {
+        if (m != &p) {
+          glm::dvec3 p_pos = p.curr_pos;
+          glm::dvec3 m_pos = m.curr_pos;
+          double dist = glm::length(p_pos - m_pos);
+          if (dist <= 1.5 * h) {
+            p.neighbors.push_back(m);
+          }
         }
     }
+}
+
+// bin each particle's position
+void Particles::build_spatial_map() {
+  map.clear();
+  for (auto &p : particles) {
+    float hash = hash_position(p.curr_pos);
+    if (map.count(hash) == 1) { // already in map
+      vector<Particle *> *p_vec = map[hash];
+      p_vec->push_back(&p);
+    } else {
+      vector<Particle *> *p_vec = new std::vector<Particle *>();
+      p_vec->push_back(&p);
+      std::pair<float, vector<Particle*> *> record(hash, p_vec);
+      map.insert(record);
+    }
+  }
+}
+
+float Particles::hash_position(glm::dvec3 pos) {
+  // find width and height
+  double width = (2 * radius * nx) + (d * (nx - 1));
+  double height = (2 * radius * ny) + (d * (ny - 1));
+
+  // partition space into 3d boxes with dimensions w * h * t
+  double w = 3 * width / nx;
+  double h = 3 * height / ny;
+  double t = max(w, h);
+
+  glm::dvec3 truncatedPos = Vector3D(floor(pos.x / w), floor(pos.y / h), floor(pos.z / t));
+  return sqrt(2) * truncatedPos.x + sqrt(3) * truncatedPos.y + sqrt(5) * truncatedPos.z;
 }
 
 void Particles::render() const
