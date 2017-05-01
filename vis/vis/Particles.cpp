@@ -120,7 +120,7 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
         // Update pred_pos
         for (auto &p : particles) {
             p.pred_pos += p.del_p;
-            bbox.collides(p, dt);
+            // bbox.collides(p, dt);
         }
     }
 
@@ -158,7 +158,7 @@ void Particles::find_neighboring(double h, Particle &p) {
 
 // bin each particle's position
 void Particles::build_spatial_map() {
-  map.clear();
+  // map.clear();
   for (auto &p : particles) {
     float hash = hash_position(p.curr_pos);
     if (map.count(hash) == 1) { // already in map
@@ -174,7 +174,7 @@ void Particles::build_spatial_map() {
 }
 
 float Particles::hash_position(glm::dvec3 pos) {
-  // find width and height
+  find width and height
   double width = (2 * radius * nx) + (d * (nx - 1));
   double height = (2 * radius * ny) + (d * (ny - 1));
 

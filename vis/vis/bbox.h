@@ -35,7 +35,7 @@ struct BBox {
         bool collides(Particle &p, double dt) {
             // TODO: Have a separate method for verlett integration
             double d = 0.25;
-            glm::dvec3 next_step = p.curr_pos + dt * (dt * p.forces / (double) p.mass + p.vdt);
+            glm::dvec3 next_step = p.pred_pos + p.del_p;
             bool c = false;
             double clamp = 0.005;
 
@@ -45,21 +45,18 @@ struct BBox {
             // TODO: Bounce's angle seems a bit strange..
             if (next_step.x > b_max.x || next_step.x < b_min.x) {
                 p.vdt.x *= -1;
-                // p.last_pos = p.curr_pos;
-                // p.curr_pos.x *= -1;
+                p.pred_pos = p.curr_pos;
                 c = true;
+                // std::cout << "outside x" << std::endl;
             }
             if (next_step.y > b_max.y || next_step.y < b_min.y) {
                 p.vdt.y *= -1;
-                // p.last_pos = p.curr_pos;
-                // p.curr_pos.y *= -1;
+                p.pred_pos = p.curr_pos;
                 c = true;
-                std::cout << "UNDER!!" << std::endl;
             }
             if (next_step.z > b_max.z || next_step.z < b_min.z) {
                 p.vdt.z *= -1;
-                // p.last_pos = p.curr_pos;
-                // p.curr_pos.z *= -1;
+                p.pred_pos = p.curr_pos;
                 c = true;
             }
 
@@ -68,7 +65,11 @@ struct BBox {
             // a face of the bounding box
             // TODO: Do this for all faces 
             if (glm::length(p.vdt) < clamp && (std::abs(next_step.y - b_min.y) < min_dist ||
-                                               std::abs(next_step.y - b_max.y) < min_dist)) {
+                                               std::abs(next_step.y - b_max.y) < min_dist ||
+                                               std::abs(next_step.x - b_min.x) < min_dist ||
+                                               std::abs(next_step.x - b_max.x) < min_dist ||
+                                               std::abs(next_step.z - b_min.z) < min_dist ||
+                                               std::abs(next_step.z - b_max.z) < min_dist)) {
                 p.vdt = glm::dvec3(0, 0, 0);
                 p.forces = glm::dvec3(0, 0, 0);
             }
