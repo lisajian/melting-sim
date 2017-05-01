@@ -32,10 +32,10 @@ struct BBox {
 
         // Returns true if p will collide with box in given
         // time step and adjusts velocity vector accordingly
-        bool collides(Particle &p) {
+        bool collides(Particle &p, double dt) {
             // TODO: Have a separate method for verlett integration
             double d = 0.25;
-            glm::dvec3 next_step = p.curr_pos + p.forces / (double) p.mass + p.vdt;
+            glm::dvec3 next_step = p.curr_pos + dt * (dt * p.forces / (double) p.mass + p.vdt);
             bool c = false;
             double clamp = 0.005;
 
@@ -54,6 +54,7 @@ struct BBox {
                 // p.last_pos = p.curr_pos;
                 // p.curr_pos.y *= -1;
                 c = true;
+                std::cout << "UNDER!!" << std::endl;
             }
             if (next_step.z > b_max.z || next_step.z < b_min.z) {
                 p.vdt.z *= -1;

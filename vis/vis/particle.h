@@ -22,6 +22,7 @@ struct Particle {
     }
 
     glm::dvec3 curr_pos;
+    glm::dvec3 pred_pos;
     glm::dvec3 del_p;
     glm::dvec3 vdt;
     glm::dvec3 new_vdt;
