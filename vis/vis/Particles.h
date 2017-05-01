@@ -46,6 +46,9 @@ class Particles {
         std::unordered_map<float, std::vector<Particle *> *> map;
         double default_mass;
         std::vector<glm::dvec3> default_forces;
+        int nx;
+        int ny;
+        int nz;
 };
 
 #endif /* PARTICLES_H */

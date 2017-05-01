@@ -18,6 +18,9 @@ Particles::Particles() {
     bbox = BBox(glm::dvec3(-2, -2, -2), glm::dvec3(2, 2, 2));
     default_forces = {glm::dvec3(0, -9.8, 0)};
     default_mass = 10;
+    nx = 5;
+    ny = 1;
+    nz = 1;
     reset();
 }
 
@@ -25,10 +28,6 @@ Particles::Particles() {
 void Particles::reset() {
     // Number of particles in each dimension
     particles.clear();
-    int num = 0;
-    int nx = 5;
-    int ny = 5;
-    int nz = 5;
     float y_offset = 1;
     float z_offset = -2;
     float d = 0.1;
@@ -179,9 +178,6 @@ float Particles::hash_position(glm::dvec3 pos) {
     // find width and height
     // TODO: make radius, d, nx, ny, nz member variables
     float radius = 0.04;
-    int nx = 5;
-    int ny = 5;
-    int nz = 5;
     float d = 0.1;
     double width = (2 * radius * nx) + (d * (nx - 1));
     double height = (2 * radius * ny) + (d * (ny - 1));
