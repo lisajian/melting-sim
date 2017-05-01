@@ -64,6 +64,7 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
 
     // Get neighbors. Distance between point centers is hardcoded
     // double inf = std::numeric_limits<double>::infinity();
+    build_spatial_map();
     for (auto &p : particles) {
         find_neighboring(h, p);
     }
@@ -136,25 +137,25 @@ void Particles::find_neighboring(double h, Particle &p) {
     p.neighbors.clear();
     // // Naive way of finding neighbors
     // int j = 0;
-    // for (auto &other : particles) {
-    //     if (&p != &other && glm::length(p.curr_pos - other.curr_pos) <= h) {
-    //         p.neighbors.push_back(other);
-    //     }
-    // }
-    float hash = hash_position(p.curr_pos);
-    if (map.count(hash) == 1) {
-        std::vector<Particle *> *matches = map.at(hash);
-        for (Particle *m : *matches) {
-            if (m != &p) {
-              glm::dvec3 p_pos = p.curr_pos;
-              glm::dvec3 m_pos = m->curr_pos;
-              double dist = glm::length(p_pos - m_pos);
-              if (dist <= h) {
-                p.neighbors.push_back(*m);
-              }
-            }
+    for (auto &other : particles) {
+        if (&p != &other && glm::length(p.curr_pos - other.curr_pos) <= h) {
+            p.neighbors.push_back(other);
         }
     }
+    // float hash = hash_position(p.curr_pos);
+    // if (map.count(hash) == 1) {
+    //     std::vector<Particle *> *matches = map.at(hash);
+    //     for (Particle *m : *matches) {
+    //         if (m != &p) {
+    //           glm::dvec3 p_pos = p.curr_pos;
+    //           glm::dvec3 m_pos = m->curr_pos;
+    //           double dist = glm::length(p_pos - m_pos);
+    //           if (dist <= h) {
+    //             p.neighbors.push_back(*m);
+    //           }
+    //         }
+    //     }
+    // }
 }
 
 // bin each particle's position
