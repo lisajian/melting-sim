@@ -17,7 +17,7 @@
 Particles::Particles() {
     bbox = BBox(glm::dvec3(-2, -2, -2), glm::dvec3(2, 2, 2));
     default_forces = {glm::dvec3(0, -9.8, 0)};
-    default_mass = 10000;
+    default_mass = 10;
     reset();
 }
 
@@ -39,7 +39,10 @@ void Particles::reset() {
             for(int z=0; z<nz; z++)
             {
                 Particle par(glm::dvec3((x+0.5-nx*0.5)*d + z_offset, (y+0.5)*d-1.0 + y_offset, (z+0.5-nz*0.5)*d));
-                par.forces = glm::dvec3(0.0, -9.8, 0.0); // TODO: Handle external forces better. This is gravity
+                par.forces = glm::dvec3(0.0, 0, 0.0); // TODO: Handle external forces better. This is gravity
+                for (glm::dvec3 f : default_forces) {
+                    par.forces += f;
+                }
                 par.mass = default_mass;
                 particles.push_back(par);
             }
@@ -52,12 +55,13 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
                      double const_n, double del_q, int solverIterations) {
     // Generic time step update
     for (auto &p : particles) {
-        p.vdt = p.vdt + p.forces / (double) p.mass;
-        p.curr_pos = p.curr_pos + p.vdt;
-        bbox.collides(p); // TODO: comment out
+        p.vdt = p.vdt + dt * p.forces / (double) p.mass;
+        p.pred_pos = p.curr_pos + dt * p.vdt;
+        // p.curr_pos = p.pred_pos; // TODO: comment out
+        // bbox.collides(p, dt); // TODO: comment out
     }
 
-    return; // TODO: remove this
+    // return; // TODO: remove this
 
     // Get neighbors. Distance between point centers is hardcoded
     // double inf = std::numeric_limits<double>::infinity();
@@ -110,12 +114,20 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
                 new_del_p += (p.lambda + n.lambda + s_corr) * intermed;
             }
             p.del_p = new_del_p / rho;
+            // TODO: Collision detection?
+            bbox.collides(p, dt);
+        }
+        // Update pred_pos
+        for (auto &p : particles) {
+            p.pred_pos += p.del_p;
+            bbox.collides(p, dt);
         }
     }
 
+    // Update velocity, position, vorticity, XSPH
     for (auto &p : particles) {
-        p.curr_pos += p.del_p;
-        bbox.collides(p);
+        p.vdt = (1.0 / dt) * (p.pred_pos - p.curr_pos);
+        p.curr_pos = p.pred_pos;
     }
 }
 
@@ -124,9 +136,8 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
 void Particles::find_neighboring(double h, Particle &p) {
     p.neighbors.clear();
     // Naive way of finding neighbors
-    int j = 0;
     for (auto &other : particles) {
-        if (&p != &other && glm::length(p.curr_pos - other.curr_pos) <= h) {
+        if (&p != &other && glm::length(p.pred_pos - other.curr_pos) <= h) {
             p.neighbors.push_back(other);
         }
     }

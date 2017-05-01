@@ -13,7 +13,7 @@
 struct FluidSim {
     // Default settings
     FluidSim() {
-        dt = 0.5;
+        dt = 0.01;
         rho = 1;
         h = 3;
         k = 0.1;
