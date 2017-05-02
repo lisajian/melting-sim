@@ -123,7 +123,7 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
             }
             p.del_p = new_del_p / rho;
             // TODO: Collision detection?
-            bbox.collides(p, dt);
+            // bbox.collides(p, dt);
         }
         // Update pred_pos
         for (auto &p : particles) {
@@ -156,6 +156,9 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
         glm::dvec3 eta = glm::normalize(omega);
         visc *= c * 315.0 / (64.0 * M_PI * std::pow(h, 9.0));
         glm::dvec3 vorticity = eps_vort * glm::cross(eta, omega);
+
+        // Update with vorticity
+        p.forces += vorticity;
 
         // Update velocity with viscocity
         p.vdt += visc;
