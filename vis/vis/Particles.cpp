@@ -20,7 +20,7 @@ Particles::Particles() {
     default_mass = 10;
     nx = 2;
     ny = 1;
-    nz = 2;
+    nz = 1;
     reset();
 }
 
@@ -123,7 +123,7 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
             }
             p.del_p = new_del_p / rho;
             // TODO: Collision detection?
-            // bbox.collides(p, dt);
+            bbox.collides(p, dt);
         }
         // Update pred_pos
         for (auto &p : particles) {
@@ -135,6 +135,8 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
     for (auto &p : particles) {
         p.vdt = (1.0 / dt) * (p.pred_pos - p.curr_pos);
 
+        // bbox.collides(p, dt);
+        
         // TODO: Do this after?
         p.vdt.x *= p.wall_collide.x;
         p.vdt.y *= p.wall_collide.y;
@@ -144,6 +146,7 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
         // Determine eta for vorticity calculation
         glm::dvec3 visc = glm::dvec3(0, 0, 0);
         glm::dvec3 omega = glm::dvec3(0, 0, 0);
+        glm::dvec3 eta = glm::dvec3(0, 0, 0);
         for (auto &n : p.neighbors) {
             glm::dvec3 diff = p.curr_pos - n.curr_pos;
             visc += diff * std::pow(h * h - glm::dot(diff, diff), 3.0);
@@ -153,7 +156,9 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
             grad_j_W *= 45.0 / (M_PI * std::pow(h, 6.0)); // Negative b/c should be n.curr_pos - p.curr_pos
             omega += glm::cross(-diff, grad_j_W);
         }
-        glm::dvec3 eta = glm::normalize(omega);
+        if (!glm::any(glm::equal(omega, glm::dvec3(0, 0, 0)))) {
+            eta = glm::normalize(omega);
+        }
         visc *= c * 315.0 / (64.0 * M_PI * std::pow(h, 9.0));
         glm::dvec3 vorticity = eps_vort * glm::cross(eta, omega);
 
@@ -164,6 +169,11 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
         p.vdt += visc;
 
         p.curr_pos = p.pred_pos;
+        std::cout << "p.id: " << p.id << std::endl;
+        std::cout << "position: (" << p.curr_pos.x << ", " << p.curr_pos.y << ", " << p.curr_pos.z << ")" << std::endl;
+        // std::cout << "vorticity: (" << vorticity.x << ", " << vorticity.y << ", " << vorticity.z << ")" << std::endl;
+        // std::cout << "eta: (" << eta.x << ", " << eta.y << ", " << eta.z << ")" << std::endl;
+
     }
 }
 

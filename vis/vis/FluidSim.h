@@ -21,7 +21,7 @@ struct FluidSim {
         c = 0.01;
         n = 4;
         eps = 1000;
-        eps_vort = 0.1;
+        eps_vort = 0.001;
         all_particles = Particles();
         solverIterations = 1;
     }
