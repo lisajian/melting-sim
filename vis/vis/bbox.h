@@ -43,15 +43,21 @@ struct BBox {
             // Collided with bounding box; make adjustment in position
             // TODO: Implement self collisions
             if (next_step.x > b_max.x || next_step.x < b_min.x) {
-                p.wall_collide = glm::dvec3(-(1-d), 1, 1);
+                double adj = fmin(std::abs(next_step.x - b_min.x), std::abs(next_step.x - b_max.x));
+                p.pred_pos += adj * (p.curr_pos - next_step);
+                p.wall_collide = glm::dvec3(-(1 - d), 1 - d, 1 - d);
                 c = true;
             }
             if (next_step.y > b_max.y || next_step.y < b_min.y) {
-                p.wall_collide = glm::dvec3(1, -(1-d), 1);
+                double adj = fmin(std::abs(next_step.y - b_min.y), std::abs(next_step.y - b_max.y));
+                p.pred_pos += adj * (p.curr_pos - next_step);
+                p.wall_collide = glm::dvec3(1 - d, -(1 - d), 1 - d);
                 c = true;
             }
             if (next_step.z > b_max.z || next_step.z < b_min.z) {
-                p.wall_collide = glm::dvec3(1, 1, -(1-d));
+                double adj = fmin(std::abs(next_step.z - b_min.z), std::abs(next_step.z - b_max.z));
+                p.pred_pos += adj * (p.curr_pos - next_step);
+                p.wall_collide = glm::dvec3(1 - d, 1 - d, -(1 - d));
                 c = true;
             }
 

@@ -36,7 +36,7 @@ class Particles {
         void render() const;
         void reset();
         void step(double dt, double h, double rho, double eps, double k, \
-                  double const_n, double del_q, int solverIterations); // simulate one frame
+                  double const_n, double del_q, int solverIterations, double c, double eps_vort); // simulate one frame
         void find_neighboring(double h, Particle &p);
         void build_spatial_map();
         float hash_position(glm::dvec3 pos);

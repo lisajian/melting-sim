@@ -18,8 +18,10 @@ struct FluidSim {
         h = 0.15;
         k = 0.001;
         del_q = 0.01 * h;
+        c = 0.01;
         n = 4;
         eps = 1000;
+        eps_vort = 0.1;
         all_particles = Particles();
         solverIterations = 1;
     }
@@ -41,8 +43,12 @@ struct FluidSim {
     double n;
     // Used in determining lambda_i's, relaxation term
     double eps;
+    // Used in vorticity calculation
+    double eps_vort;
     // Used in large simulation loop
     int solverIterations;
+    // Used in XSPH viscocity calculation
+    double c;
     Particles all_particles;
 
     void reset();
