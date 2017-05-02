@@ -17,10 +17,10 @@
 Particles::Particles() {
     bbox = BBox(glm::dvec3(-2, -2, -2), glm::dvec3(2, 2, 2));
     default_forces = {glm::dvec3(0, -9.8, 0)};
-    default_mass = 10;
-    nx = 10;
-    ny = 1;
-    nz = 1;
+    default_mass = 8;
+    nx = 2;
+    ny = 2;
+    nz = 2;
     reset();
 }
 
@@ -73,13 +73,17 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
     for (auto &p : particles) {
         find_neighboring(h, p);
         // printing
-        if (p.neighbors.size() > 0) {
-            std::cout << p.id << "'s neighbors: " << std::endl;
-            for (int i = 0; i < p.neighbors.size(); i++) {
-                std::cout << p.neighbors.at(i).id << std::endl;
-            }
-        }
+        // if (p.neighbors.size() > 0) {
+        //     std::cout << p.id << "'s neighbors: " << std::endl;
+        //     for (int i = 0; i < p.neighbors.size(); i++) {
+        //         std::cout << p.neighbors.at(i).id << std::endl;
+        //     }
+        // }
     }
+
+    // constants for kernels
+    double poly6_const = 315.0 / (64.0 * M_PI * std::pow(h, 9.0));
+    double spiky_const = - 45.0 / (M_PI * std::pow(h, 6.0));
 
     for (int i = 0; i < solverIterations; i++) {
         // Determine lambda_i
@@ -93,7 +97,7 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
                 rho_i += n.mass * std::pow(h * h - glm::dot(diff, diff), 3.0);
             }
 
-            rho_i *= 315.0 / (64.0 * M_PI * std::pow(h, 9.0));
+            rho_i *= poly6_const;
             p.C = rho_i / rho - 1.0;
 
             // Use spiky kernel for gradients
@@ -103,7 +107,7 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
                 glm::dvec3 diff = p.curr_pos - n.curr_pos;
                 double len = glm::length(diff);
                 glm::dvec3 intermed = (std::pow(h - len, 2.0) / len) * diff;
-                intermed *= - 45.0 / (M_PI * std::pow(h, 6.0));
+                intermed *= spiky_const;
                 
                 grad_i_W += intermed;
                 grad_j_W += glm::dot(intermed, intermed);
@@ -119,7 +123,7 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
                 // Get the gradient
                 double len = glm::length(diff);
                 glm::dvec3 intermed = (pow(h - len, 2.0) / len) * diff;
-                intermed *= - 45.0 / (M_PI * std::pow(h, 6.0));
+                intermed *= spiky_const;
 
                 // Calculate s_corr using poly6 kernel
                 double s_corr = std::pow(h * h - glm::dot(diff, diff), 3.0);
@@ -162,13 +166,13 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
 
             double len = glm::length(diff);
             glm::dvec3 grad_j_W = (std::pow(h - len, 2.0) / len) * diff; // Positive b/c derivative wrt pj
-            grad_j_W *= 45.0 / (M_PI * std::pow(h, 6.0)); // Negative b/c should be n.curr_pos - p.curr_pos
+            grad_j_W *= -1 * spiky_const; // Negative b/c should be n.curr_pos - p.curr_pos
             omega += glm::cross(-diff, grad_j_W);
         }
         if (!glm::all(glm::equal(omega, glm::dvec3(0, 0, 0)))) {
             eta = glm::normalize(omega);
         }
-        visc *= c * 315.0 / (64.0 * M_PI * std::pow(h, 9.0));
+        visc *= c * poly6_const;
         glm::dvec3 vorticity = eps_vort * glm::cross(eta, omega);
 
         // Update with vorticity
