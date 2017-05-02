@@ -17,7 +17,7 @@
 Particles::Particles() {
     bbox = BBox(glm::dvec3(-2, -2, -2), glm::dvec3(2, 2, 2));
     default_forces = {glm::dvec3(0, -9.8, 0)};
-    default_mass = 8;
+    default_mass = 10;
     nx = 2;
     ny = 2;
     nz = 2;
@@ -58,6 +58,7 @@ void Particles::reset() {
 void Particles::step(double dt, double h, double rho, double eps, double k, \
                      double const_n, double del_q, int solverIterations, double c, double eps_vort) {
     // Generic time step update
+    // #pragma omp parallel
     for (auto &p : particles) {
         p.vdt = p.vdt + dt * p.forces / (double) p.mass;
         p.pred_pos = p.curr_pos + dt * p.vdt;
@@ -70,6 +71,7 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
     // Get neighbors. Distance between point centers is hardcoded
     // double inf = std::numeric_limits<double>::infinity();
     build_spatial_map();
+    // #pragma omp parallel
     for (auto &p : particles) {
         find_neighboring(h, p);
         // printing
@@ -85,6 +87,7 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
     double poly6_const = 315.0 / (64.0 * M_PI * std::pow(h, 9.0));
     double spiky_const = - 45.0 / (M_PI * std::pow(h, 6.0));
 
+    // #pragma omp parallel
     for (int i = 0; i < solverIterations; i++) {
         // Determine lambda_i
         for (auto &p : particles) {
@@ -141,10 +144,14 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
         // Update pred_pos
         for (auto &p : particles) {
             p.pred_pos += p.del_p;
+            // bbox.collides(p, dt);
+            // // handle particle collisions with each other
+            // particle_collisions(p);
         }
     }
 
     // Update velocity, position, vorticity, XSPH
+    // #pragma omp parallel
     for (auto &p : particles) {
         p.vdt = (1.0 / dt) * (p.pred_pos - p.curr_pos);
 
@@ -177,13 +184,14 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
 
         // Update with vorticity
         p.forces += vorticity;
+        // p.forces.y *= p.wall_collide_f.y;
 
         // Update velocity with viscocity
         p.vdt += visc;
 
         p.curr_pos = p.pred_pos;
-        std::cout << "p.id: " << p.id << std::endl;
-        std::cout << "position: (" << p.curr_pos.x << ", " << p.curr_pos.y << ", " << p.curr_pos.z << ")" << std::endl;
+        // std::cout << "p.id: " << p.id << std::endl;
+        // std::cout << "position: (" << p.curr_pos.x << ", " << p.curr_pos.y << ", " << p.curr_pos.z << ")" << std::endl;
         // std::cout << "vorticity: (" << vorticity.x << ", " << vorticity.y << ", " << vorticity.z << ")" << std::endl;
         // std::cout << "eta: (" << eta.x << ", " << eta.y << ", " << eta.z << ")" << std::endl;
 

@@ -29,6 +29,7 @@ struct Particle {
     glm::dvec3 forces;
     glm::dvec3 adjustment_vec;
     glm::dvec3 wall_collide;
+    glm::dvec3 wall_collide_f;
     glm::dvec3 particle_collide;
     std::vector<Particle> neighbors;
     float mass;
