@@ -20,7 +20,7 @@ Particles::Particles() {
     default_mass = 10;
     nx = 10;
     ny = 1;
-    nz = 2;
+    nz = 1;
     reset();
 }
 
@@ -56,7 +56,7 @@ void Particles::reset() {
 
 // Single update step for all particles
 void Particles::step(double dt, double h, double rho, double eps, double k, \
-                     double const_n, double del_q, int solverIterations) {
+                     double const_n, double del_q, int solverIterations, double c, double eps_vort) {
     // Generic time step update
     for (auto &p : particles) {
         p.vdt = p.vdt + dt * p.forces / (double) p.mass;
@@ -86,7 +86,9 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
         for (auto &p : particles) {
             // Use poly6 kernel for rho (pressure)
             double rho_i = 0.0;
+            // std::cout << "p.id: " << p.id << std::endl;
             for (auto &n : p.neighbors) {
+                // std::cout << "I HAVE NEIGHBORS" << std::endl;
                 glm::dvec3 diff = p.curr_pos - n.curr_pos;
                 rho_i += n.mass * std::pow(h * h - glm::dot(diff, diff), 3.0);
             }
@@ -141,10 +143,46 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
     // Update velocity, position, vorticity, XSPH
     for (auto &p : particles) {
         p.vdt = (1.0 / dt) * (p.pred_pos - p.curr_pos);
+
+        // bbox.collides(p, dt);
+        
+        // TODO: Do this after?
         p.vdt.x *= p.wall_collide.x;
         p.vdt.y *= p.wall_collide.y;
         p.vdt.z *= p.wall_collide.z;
+
+        // Apply XSPH viscocity
+        // Determine eta for vorticity calculation
+        glm::dvec3 visc = glm::dvec3(0, 0, 0);
+        glm::dvec3 omega = glm::dvec3(0, 0, 0);
+        glm::dvec3 eta = glm::dvec3(0, 0, 0);
+        for (auto &n : p.neighbors) {
+            glm::dvec3 diff = p.curr_pos - n.curr_pos;
+            visc += diff * std::pow(h * h - glm::dot(diff, diff), 3.0);
+
+            double len = glm::length(diff);
+            glm::dvec3 grad_j_W = (std::pow(h - len, 2.0) / len) * diff; // Positive b/c derivative wrt pj
+            grad_j_W *= 45.0 / (M_PI * std::pow(h, 6.0)); // Negative b/c should be n.curr_pos - p.curr_pos
+            omega += glm::cross(-diff, grad_j_W);
+        }
+        if (!glm::any(glm::equal(omega, glm::dvec3(0, 0, 0)))) {
+            eta = glm::normalize(omega);
+        }
+        visc *= c * 315.0 / (64.0 * M_PI * std::pow(h, 9.0));
+        glm::dvec3 vorticity = eps_vort * glm::cross(eta, omega);
+
+        // Update with vorticity
+        p.forces += vorticity;
+
+        // Update velocity with viscocity
+        p.vdt += visc;
+
         p.curr_pos = p.pred_pos;
+        std::cout << "p.id: " << p.id << std::endl;
+        std::cout << "position: (" << p.curr_pos.x << ", " << p.curr_pos.y << ", " << p.curr_pos.z << ")" << std::endl;
+        // std::cout << "vorticity: (" << vorticity.x << ", " << vorticity.y << ", " << vorticity.z << ")" << std::endl;
+        // std::cout << "eta: (" << eta.x << ", " << eta.y << ", " << eta.z << ")" << std::endl;
+
     }
 }
 
@@ -173,11 +211,9 @@ void Particles::particle_collisions(Particle &p) {
 void Particles::find_neighboring(double h, Particle &p) {
     p.neighbors.clear();
     // // Naive way of finding neighbors
-    // int j = 0;
     // for (auto &other : particles) {
     //     if (&p != &other && glm::length(p.curr_pos - other.curr_pos) <= h) {
     //         p.neighbors.push_back(other);
-
     //     }
     // }
     float hash = hash_position(p.curr_pos);
