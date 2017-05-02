@@ -28,12 +28,12 @@ struct Particle {
     glm::dvec3 new_vdt;
     glm::dvec3 forces;
     glm::dvec3 adjustment_vec;
+    glm::dvec3 wall_collide;
     std::vector<Particle> neighbors;
     float mass;
     double C;
     double lambda;
-
-    // TODO: need a predicted position, pos*
+    int id; // TODO: remove this
 
 };
 

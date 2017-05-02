@@ -13,13 +13,13 @@
 struct FluidSim {
     // Default settings
     FluidSim() {
-        dt = 0.01;
-        rho = 1;
-        h = 3;
-        k = 0.1;
-        del_q = 0.1 * h;
+        dt = 0.1;
+        rho = 16;
+        h = 0.15;
+        k = 0.001;
+        del_q = 0.01 * h;
         n = 4;
-        eps = 0.05;
+        eps = 1000;
         all_particles = Particles();
         solverIterations = 1;
     }

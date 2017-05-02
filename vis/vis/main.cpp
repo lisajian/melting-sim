@@ -35,13 +35,14 @@ void display(void);
 void reshape(int width, int height);
 
 void idle(void) {
-    // if (frame/render_step < 300) {
-    //     particles.step();
+    // if (frame/render_step < 100) {
+    //     fluidSim.step();
     //     glutPostRedisplay();
     // }
     fluidSim.step();
     glutPostRedisplay();
-    if(frame/render_step >= 300) {
+    if(frame/render_step >= 100) {
+        // std::cout << "stopped" << std::endl;
         return;
     }
     if(frame%render_step == 0)
