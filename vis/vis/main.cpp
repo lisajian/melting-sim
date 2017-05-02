@@ -117,7 +117,55 @@ void display(void) {
             0, 0, 0, 
             0, 1, 0);
     glScalef(_zoom,_zoom,_zoom);
-    
+
+    // bottom face
+    glBegin(GL_LINE_LOOP);
+    glVertex3f(-2, -2, -2);
+    glVertex3f(-2, 2, -2);
+    glVertex3f(2, 2, -2);
+    glVertex3f(2, -2, -2);
+    glEnd();
+
+    // right face
+    glBegin(GL_LINE_LOOP);
+    glVertex3f(2, 2, -2);
+    glVertex3f(2, -2, -2);
+    glVertex3f(2, -2, 2);
+    glVertex3f(2, 2, 2);
+    glEnd();
+
+    // front face
+    glBegin(GL_LINE_LOOP);
+    glVertex3f(-2, 2, -2);
+    glVertex3f(2, 2, -2);
+    glVertex3f(2, 2, 2);
+    glVertex3f(-2, 2, 2);
+    glEnd();
+
+    // left face
+    glBegin(GL_LINE_LOOP);
+    glVertex3f(-2, 2, -2);
+    glVertex3f(-2, -2, -2);
+    glVertex3f(-2, -2, 2);
+    glVertex3f(-2, 2, 2);
+    glEnd();
+
+    // back face
+    glBegin(GL_LINE_LOOP);
+    glVertex3f(-2, -2, -2);
+    glVertex3f(2, -2, -2);
+    glVertex3f(2, -2, 2);
+    glVertex3f(-2, -2, 2);
+    glEnd();
+
+    // top face
+    glBegin(GL_LINE_LOOP);
+    glVertex3f(2, 2, 2);
+    glVertex3f(2, -2, 2);
+    glVertex3f(-2, -2, 2);
+    glVertex3f(-2, 2, 2);
+    glEnd();
+
     fluidSim.render();
 
     glutSwapBuffers();
