@@ -18,7 +18,7 @@ Particles::Particles() {
     bbox = BBox(glm::dvec3(-2, -2, -2), glm::dvec3(2, 2, 2));
     default_forces = {glm::dvec3(0, -9.8, 0)};
     default_mass = 10;
-    nx = 2;
+    nx = 10;
     ny = 1;
     nz = 2;
     reset();
@@ -28,9 +28,9 @@ Particles::Particles() {
 void Particles::reset() {
     // Number of particles in each dimension
     particles.clear();
-    // float x_offset = 1;
+    float x_offset = 0;
     float y_offset = 1;
-    // float z_offset = -2;
+    float z_offset = 0;
     float d = 0.1;
     int i = 0;
     for(int x=0; x<nx; x++)
@@ -39,7 +39,7 @@ void Particles::reset() {
         {
             for(int z=0; z<nz; z++)
             {
-                Particle par(glm::dvec3((x+0.5-nx*0.5)*d, (y+0.5)*d-1.0 + y_offset, (z+0.5-nz*0.5)*d));
+                Particle par(glm::dvec3((x+0.5-nx*0.5)*d + x_offset, (y+0.5)*d-1.0 + y_offset, (z+0.5-nz*0.5)*d + z_offset));
                 par.forces = glm::dvec3(0.0, 0, 0.0);
                 for (glm::dvec3 f : default_forces) {
                     par.forces += f;
@@ -69,9 +69,16 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
 
     // Get neighbors. Distance between point centers is hardcoded
     // double inf = std::numeric_limits<double>::infinity();
-    // build_spatial_map();
+    build_spatial_map();
     for (auto &p : particles) {
         find_neighboring(h, p);
+        // printing
+        if (p.neighbors.size() > 0) {
+            std::cout << p.id << "'s neighbors: " << std::endl;
+            for (int i = 0; i < p.neighbors.size(); i++) {
+                std::cout << p.neighbors.at(i).id << std::endl;
+            }
+        }
     }
 
     for (int i = 0; i < solverIterations; i++) {
@@ -122,6 +129,8 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
             p.del_p = new_del_p / rho;
             // TODO: Collision detection?
             bbox.collides(p, dt);
+            // handle particle collisions with each other
+            particle_collisions(p);
         }
         // Update pred_pos
         for (auto &p : particles) {
@@ -135,10 +144,29 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
         p.vdt.x *= p.wall_collide.x;
         p.vdt.y *= p.wall_collide.y;
         p.vdt.z *= p.wall_collide.z;
-
         p.curr_pos = p.pred_pos;
     }
 }
+
+void Particles::particle_collisions(Particle &p) {
+    float radius = 0.04;
+    for (auto &n : p.neighbors) {
+        float diff = glm::length(p.pred_pos - n.pred_pos);
+        p.particle_collide = glm::dvec3(1, 1, 1);
+        if (diff < 2 * radius) {
+            // apply correction vector to both 
+            glm::dvec3 p_corr = p.pred_pos - p.curr_pos;
+            glm::dvec3 n_corr = n.pred_pos - n.curr_pos;
+            float p_corr_len = 2 * radius - glm::length(p_corr);
+            float n_corr_len = 2 * radius - glm::length(n_corr);
+            p_corr = glm::normalize(p_corr);
+            n_corr = glm::normalize(n_corr);
+            p.pred_pos = p.curr_pos + glm::dvec3(p_corr_len * p_corr.x, p_corr_len * p_corr.y, p_corr_len * p_corr.z);
+            n.pred_pos = n.curr_pos + glm::dvec3(n_corr_len * n_corr.x, n_corr_len * n_corr.y, n_corr_len * n_corr.z);
+        }
+    }
+}
+
 
 // Find all neighbors n of p such that the distance between the
 // centers of n and p is at most h
@@ -146,26 +174,26 @@ void Particles::find_neighboring(double h, Particle &p) {
     p.neighbors.clear();
     // // Naive way of finding neighbors
     // int j = 0;
-    for (auto &other : particles) {
-        if (&p != &other && glm::length(p.curr_pos - other.curr_pos) <= h) {
-            p.neighbors.push_back(other);
+    // for (auto &other : particles) {
+    //     if (&p != &other && glm::length(p.curr_pos - other.curr_pos) <= h) {
+    //         p.neighbors.push_back(other);
 
-        }
-    }
-    // float hash = hash_position(p.curr_pos);
-    // if (map.count(hash) == 1) {
-    //     std::vector<Particle *> *matches = map.at(hash);
-    //     for (Particle *m : *matches) {
-    //         if (m != &p) {
-    //           glm::dvec3 p_pos = p.curr_pos;
-    //           glm::dvec3 m_pos = m->curr_pos;
-    //           double dist = glm::length(p_pos - m_pos);
-    //           if (dist <= h) {
-    //             p.neighbors.push_back(*m);
-    //           }
-    //         }
     //     }
     // }
+    float hash = hash_position(p.curr_pos);
+    if (map.count(hash) == 1) {
+        std::vector<Particle *> *matches = map.at(hash);
+        for (Particle *m : *matches) {
+            if (m != &p) {
+              glm::dvec3 p_pos = p.curr_pos;
+              glm::dvec3 m_pos = m->curr_pos;
+              double dist = glm::length(p_pos - m_pos);
+              if (dist <= h) {
+                p.neighbors.push_back(*m);
+              }
+            }
+        }
+    }
 }
 
 // bin each particle's position
@@ -198,8 +226,11 @@ float Particles::hash_position(glm::dvec3 pos) {
     double h = 3 * height / ny;
     double t = fmax(w, h);
 
-    glm::dvec3 truncatedPos = glm::dvec3(floor(pos.x / w), floor(pos.y / h), floor(pos.z / t));
-    return sqrt(2) * truncatedPos.x + sqrt(3) * truncatedPos.y + sqrt(5) * truncatedPos.z;
+    glm::dvec3 truncatedPos = glm::dvec3(floor((pos.x + 2)/ w), floor((pos.y + 2) / h), floor((pos.z + 2) / t));
+    // std::cout << "pos x: " << truncatedPos.x << ", pos y: " << truncatedPos.y << ", pos z: " << truncatedPos.z << std::endl; 
+    float hash = sqrt(2) * truncatedPos.x + sqrt(3) * truncatedPos.y + sqrt(5) * truncatedPos.z;
+    // std::cout << "hash: " << hash << std::endl;
+    return hash;
 }
 
 void Particles::render() const

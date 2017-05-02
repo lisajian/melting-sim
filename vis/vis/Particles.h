@@ -40,6 +40,7 @@ class Particles {
         void find_neighboring(double h, Particle &p);
         void build_spatial_map();
         float hash_position(glm::dvec3 pos);
+        void particle_collisions(Particle &p);
     private:
         std::vector<Particle> particles;
         BBox bbox;

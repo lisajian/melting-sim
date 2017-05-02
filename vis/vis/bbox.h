@@ -43,15 +43,15 @@ struct BBox {
             // Collided with bounding box; make adjustment in position
             // TODO: Implement self collisions
             if (next_step.x > b_max.x || next_step.x < b_min.x) {
-                p.wall_collide = glm::dvec3(-(1-d), 1, 1);
+                p.wall_collide = glm::dvec3(-(1-d), 1-d, 1-d);
                 c = true;
             }
             if (next_step.y > b_max.y || next_step.y < b_min.y) {
-                p.wall_collide = glm::dvec3(1, -(1-d), 1);
+                p.wall_collide = glm::dvec3(1-d, -(1-d), 1-d);
                 c = true;
             }
             if (next_step.z > b_max.z || next_step.z < b_min.z) {
-                p.wall_collide = glm::dvec3(1, 1, -(1-d));
+                p.wall_collide = glm::dvec3(1-d, 1-d, -(1-d));
                 c = true;
             }
 
@@ -69,12 +69,7 @@ struct BBox {
             // std::cout << "std::abs(next_step.x - b_max.x): " << std::abs(next_step.x - b_max.x) << std::endl;
             // std::cout << "std::abs(next_step.z - b_min.z): " << std::abs(next_step.z - b_min.z) << std::endl;
             // std::cout << "std::abs(next_step.z - b_max.z): " << std::abs(next_step.z - b_max.z) << std::endl;
-            if (glm::length(p.vdt) < clamp && (std::abs(next_step.y - b_min.y) < min_dist ||
-                                               std::abs(next_step.y - b_max.y) < min_dist ||
-                                               std::abs(next_step.x - b_min.x) < min_dist ||
-                                               std::abs(next_step.x - b_max.x) < min_dist ||
-                                               std::abs(next_step.z - b_min.z) < min_dist ||
-                                               std::abs(next_step.z - b_max.z) < min_dist)) {
+            if (glm::length(p.vdt) < clamp && (std::abs(next_step.y - b_min.y) < min_dist)) {
                 p.wall_collide = glm::dvec3(0, 0, 0);
                 p.forces = glm::dvec3(0, 0, 0);
             }
