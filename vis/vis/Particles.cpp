@@ -18,9 +18,9 @@ Particles::Particles() {
     bbox = BBox(glm::dvec3(-2, -2, -2), glm::dvec3(2, 2, 2));
     default_forces = {glm::dvec3(0, -9.8, 0)};
     default_mass = 10;
-    nx = 5;
+    nx = 2;
     ny = 1;
-    nz = 1;
+    nz = 2;
     reset();
 }
 
@@ -28,21 +28,26 @@ Particles::Particles() {
 void Particles::reset() {
     // Number of particles in each dimension
     particles.clear();
+    // float x_offset = 1;
     float y_offset = 1;
-    float z_offset = -2;
+    // float z_offset = -2;
     float d = 0.1;
+    int i = 0;
     for(int x=0; x<nx; x++)
     {
         for(int y=0; y<ny; y++)
         {
             for(int z=0; z<nz; z++)
             {
-                Particle par(glm::dvec3((x+0.5-nx*0.5)*d + z_offset, (y+0.5)*d-1.0 + y_offset, (z+0.5-nz*0.5)*d));
-                par.forces = glm::dvec3(0.0, 0, 0.0); // TODO: Handle external forces better. This is gravity
+                Particle par(glm::dvec3((x+0.5-nx*0.5)*d, (y+0.5)*d-1.0 + y_offset, (z+0.5-nz*0.5)*d));
+                par.forces = glm::dvec3(0.0, 0, 0.0);
                 for (glm::dvec3 f : default_forces) {
                     par.forces += f;
                 }
+                par.vdt = glm::dvec3();
                 par.mass = default_mass;
+                par.id = i;
+                i++;
                 particles.push_back(par);
             }
         }
@@ -64,6 +69,7 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
 
     // Get neighbors. Distance between point centers is hardcoded
     // double inf = std::numeric_limits<double>::infinity();
+    // build_spatial_map();
     for (auto &p : particles) {
         find_neighboring(h, p);
     }
@@ -77,6 +83,7 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
                 glm::dvec3 diff = p.curr_pos - n.curr_pos;
                 rho_i += n.mass * std::pow(h * h - glm::dot(diff, diff), 3.0);
             }
+
             rho_i *= 315.0 / (64.0 * M_PI * std::pow(h, 9.0));
             p.C = rho_i / rho - 1.0;
 
@@ -86,7 +93,7 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
             for (auto &n : p.neighbors) {
                 glm::dvec3 diff = p.curr_pos - n.curr_pos;
                 double len = glm::length(diff);
-                glm::dvec3 intermed = (pow(h - len, 2.0) / len) * diff;
+                glm::dvec3 intermed = (std::pow(h - len, 2.0) / len) * diff;
                 intermed *= - 45.0 / (M_PI * std::pow(h, 6.0));
                 
                 grad_i_W += intermed;
@@ -119,13 +126,16 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
         // Update pred_pos
         for (auto &p : particles) {
             p.pred_pos += p.del_p;
-            // bbox.collides(p, dt);
         }
     }
 
     // Update velocity, position, vorticity, XSPH
     for (auto &p : particles) {
         p.vdt = (1.0 / dt) * (p.pred_pos - p.curr_pos);
+        p.vdt.x *= p.wall_collide.x;
+        p.vdt.y *= p.wall_collide.y;
+        p.vdt.z *= p.wall_collide.z;
+
         p.curr_pos = p.pred_pos;
     }
 }
@@ -136,25 +146,26 @@ void Particles::find_neighboring(double h, Particle &p) {
     p.neighbors.clear();
     // // Naive way of finding neighbors
     // int j = 0;
-    // for (auto &other : particles) {
-    //     if (&p != &other && glm::length(p.curr_pos - other.curr_pos) <= h) {
-    //         p.neighbors.push_back(other);
-    //     }
-    // }
-    float hash = hash_position(p.curr_pos);
-    if (map.count(hash) == 1) {
-        std::vector<Particle *> *matches = map.at(hash);
-        for (Particle *m : *matches) {
-            if (m != &p) {
-              glm::dvec3 p_pos = p.curr_pos;
-              glm::dvec3 m_pos = m->curr_pos;
-              double dist = glm::length(p_pos - m_pos);
-              if (dist <= h) {
-                p.neighbors.push_back(*m);
-              }
-            }
+    for (auto &other : particles) {
+        if (&p != &other && glm::length(p.curr_pos - other.curr_pos) <= h) {
+            p.neighbors.push_back(other);
+
         }
     }
+    // float hash = hash_position(p.curr_pos);
+    // if (map.count(hash) == 1) {
+    //     std::vector<Particle *> *matches = map.at(hash);
+    //     for (Particle *m : *matches) {
+    //         if (m != &p) {
+    //           glm::dvec3 p_pos = p.curr_pos;
+    //           glm::dvec3 m_pos = m->curr_pos;
+    //           double dist = glm::length(p_pos - m_pos);
+    //           if (dist <= h) {
+    //             p.neighbors.push_back(*m);
+    //           }
+    //         }
+    //     }
+    // }
 }
 
 // bin each particle's position
