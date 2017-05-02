@@ -40,6 +40,7 @@ void Particles::reset() {
             for(int z=0; z<nz; z++)
             {
                 Particle par(glm::dvec3((x+0.5-nx*0.5)*d + x_offset, (y+0.5)*d-1.0 + y_offset, (z+0.5-nz*0.5)*d + z_offset));
+                // std::cout << par.curr_pos.x << ", " << par.curr_pos.y << ", " << par.curr_pos.z << std::endl;
                 par.forces = glm::dvec3(0.0, 0, 0.0);
                 for (glm::dvec3 f : default_forces) {
                     par.forces += f;
@@ -169,12 +170,13 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
         glm::dvec3 eta = glm::dvec3(0, 0, 0);
         for (auto &n : p.neighbors) {
             glm::dvec3 diff = p.curr_pos - n.curr_pos;
+            // glm::dvec3 diff = n.vdt - p.vdt;
             visc += diff * std::pow(h * h - glm::dot(diff, diff), 3.0);
 
             double len = glm::length(diff);
             glm::dvec3 grad_j_W = (std::pow(h - len, 2.0) / len) * diff; // Positive b/c derivative wrt pj
             grad_j_W *= -1 * spiky_const; // Negative b/c should be n.curr_pos - p.curr_pos
-            omega += glm::cross(-diff, grad_j_W);
+            omega += glm::cross(n.vdt - p.vdt, grad_j_W);
         }
         if (!glm::all(glm::equal(omega, glm::dvec3(0, 0, 0)))) {
             eta = glm::normalize(omega);
@@ -211,8 +213,8 @@ void Particles::particle_collisions(Particle &p) {
             float n_corr_len = 2 * radius - glm::length(n_corr);
             p_corr = glm::normalize(p_corr);
             n_corr = glm::normalize(n_corr);
-            p.pred_pos = p.curr_pos + glm::dvec3(p_corr_len * p_corr.x, p_corr_len * p_corr.y, p_corr_len * p_corr.z);
-            n.pred_pos = n.curr_pos + glm::dvec3(n_corr_len * n_corr.x, n_corr_len * n_corr.y, n_corr_len * n_corr.z);
+            p.pred_pos = p.curr_pos + ((double) p_corr_len * p_corr);
+            n.pred_pos = n.curr_pos + ((double) n_corr_len * n_corr);
         }
     }
 }
@@ -233,9 +235,7 @@ void Particles::find_neighboring(double h, Particle &p) {
         std::vector<Particle *> *matches = map.at(hash);
         for (Particle *m : *matches) {
             if (m != &p) {
-              glm::dvec3 p_pos = p.curr_pos;
-              glm::dvec3 m_pos = m->curr_pos;
-              double dist = glm::length(p_pos - m_pos);
+              double dist = glm::length(p.curr_pos - m->curr_pos);
               if (dist <= h) {
                 p.neighbors.push_back(*m);
               }
