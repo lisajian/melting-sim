@@ -165,7 +165,7 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
             grad_j_W *= 45.0 / (M_PI * std::pow(h, 6.0)); // Negative b/c should be n.curr_pos - p.curr_pos
             omega += glm::cross(-diff, grad_j_W);
         }
-        if (!glm::any(glm::equal(omega, glm::dvec3(0, 0, 0)))) {
+        if (!glm::all(glm::equal(omega, glm::dvec3(0, 0, 0)))) {
             eta = glm::normalize(omega);
         }
         visc *= c * 315.0 / (64.0 * M_PI * std::pow(h, 9.0));
