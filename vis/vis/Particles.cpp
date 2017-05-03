@@ -4,24 +4,26 @@
  * and open the template in the editor.
  */
 
-/* 
+/*
  * File:   Particles.cpp
  * Author(s): swl
- * 
+ *
  * Created on April 15, 2016, 12:16 PM
  */
 
 #include "Particles.h"
 #include "Utils.h"
 #include <limits>
+// #include <omp.h>
+#include <valarray>
 
 Particles::Particles() {
     bbox = BBox(glm::dvec3(-2, -2, -2), glm::dvec3(2, 2, 2));
     default_forces = {glm::dvec3(0, -9.8, 0)};
     default_mass = 10;
-    nx = 2;
-    ny = 2;
-    nz = 2;
+    nx = 4;
+    ny = 1;
+    nz = 4;
     reset();
 }
 
@@ -59,6 +61,36 @@ void Particles::reset() {
 // Single update step for all particles
 void Particles::step(double dt, double h, double rho, double eps, double k, \
                      double const_n, double del_q, int solverIterations, double c, double eps_vort) {
+
+    //////////// WHAT????? //////////////
+    // std::valarray<int> v = {1, 2, 3, 4};
+    // std::valarray<int> w = {5, 6, 7, 8};
+    // std::valarray<int> r = v + w;
+    // // std::cout << r[0] << std::endl;
+    // for (auto n : r) {
+    //   std::cout << n << " ";
+    // }
+    // std::cout << std::endl;
+    // // std::cout << (v * v) << std::endl;
+    // std::valarray<int> t = v * v;
+    // for (auto n : t) {
+    //   std::cout << n << " ";
+    // }
+    // std::cout << std::endl;
+    // std::valarray<int> gg = 2 * v;
+    // for (auto n : gg) {
+    //   std::cout << n << " ";
+    // }
+    // std::cout << std::endl;
+    //
+    // std::valarray<glm::dvec3> a = {glm::dvec3(1, 0, 0), glm::dvec3(0, 1, 1)};
+    // std::valarray<glm::dvec3> b = 3 * a;
+    // for (auto n : a) {
+    //   std::cout << n.x << ", " << n.y << ", " << n.z << std::endl;
+    // }
+    // return;
+    //////////// WHAT????? //////////////
+
     // Generic time step update
     // #pragma omp parallel
     for (auto &p : particles) {
@@ -80,7 +112,7 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
 
     // for (auto &p : particles) {
     //     if (p.num_collisions != 0) {
-    //         p.pred_pos += (1.0 / (double) p.num_collisions) * p.adjustment_vec; 
+    //         p.pred_pos += (1.0 / (double) p.num_collisions) * p.adjustment_vec;
     //     }
     // }
 
@@ -116,6 +148,13 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
         // }
         p.poly6 = std::vector<double>(p.neighbors.size());
         p.spiky = std::vector<glm::dvec3>(p.neighbors.size());
+        // calc_spiky(p, spiky_const, h);
+        // calc_poly6(p, poly6_const, h);
+    }
+
+    // #pragma omp parallel for
+    for (int i = 0; i < particles.size(); i++) {
+        Particle &p = particles.at(i);
         calc_spiky(p, spiky_const, h);
         calc_poly6(p, poly6_const, h);
     }
@@ -124,12 +163,16 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
     // double poly6_const = 315.0 / (64.0 * M_PI * std::pow(h, 9.0));
     // double spiky_const = - 45.0 / (M_PI * std::pow(h, 6.0));
 
-    double poly6_del_q = poly6_kernel(del_q * glm::dvec3(1, 0, 0), poly6_const, h);
+    // double poly6_del_q = poly6_kernel(del_q * glm::dvec3(1, 0, 0), poly6_const, h);
+    double s_corr_denom = pow(h - del_q, 3.0);
 
     // #pragma omp parallel
     for (int i = 0; i < solverIterations; i++) {
         // Determine lambda_i
-        for (auto &p : particles) {
+        // for (auto &p : particles) {
+        // #pragma omp parallel for
+        for (int k = 0; k < particles.size(); k++) {
+            Particle &p = particles.at(k);
             // Use poly6 kernel for rho (pressure)
             double rho_i = 0.0;
             // std::cout << "p.id: " << p.id << std::endl;
@@ -138,13 +181,13 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
                 // glm::dvec3 diff = p.curr_pos - n.curr_pos;
                 // rho_i += n.mass * std::pow(h * h - glm::dot(diff, diff), 3.0);
             // }
-            for (int j = 0; j < p.neighbors.size(); j++) {
-                rho_i += p.poly6[j];
-            }
-            rho_i *= default_mass;
-
-            // rho_i *= poly6_const;
-            p.C = rho_i / rho - 1.0;
+            // for (int j = 0; j < p.neighbors.size(); j++) {
+            //     rho_i += p.poly6[j];
+            // }
+            // rho_i *= default_mass;
+            //
+            // // rho_i *= poly6_const;
+            // p.C = rho_i / rho - 1.0;
 
             // Use spiky kernel for gradients
             glm::dvec3 grad_i_W = glm::dvec3(0, 0, 0);
@@ -155,18 +198,30 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
                 // double len = glm::length(diff);
                 // glm::dvec3 intermed = (std::pow(h - len, 2.0) / len) * diff;
                 // intermed *= spiky_const;
+                ////////////////////
+                rho_i += p.poly6[j];
+                ////////////////////
 
                 glm::dvec3 intermed = p.spiky[j];
-                
+
                 grad_i_W += intermed;
                 grad_j_W += glm::dot(intermed, intermed);
             }
+
+            ////////////////////
+            rho_i *= default_mass;
+            p.C = rho_i / rho - 1.0;
+            ////////////////////
+
             p.lambda = - p.C / (grad_j_W + glm::dot(grad_i_W, grad_i_W) + eps);
         }
 
 
         // Determine delta p
-        for (auto &p : particles) {
+        // for (auto &p : particles) {
+        // #pragma omp parallel for
+        for (int k = 0; k < particles.size(); k++) {
+            Particle &p = particles.at(k);
             glm::dvec3 new_del_p = glm::dvec3(0, 0, 0);
             // for (auto &n : p.neighbors) {
             for (int j = 0; j < p.neighbors.size(); j++) {
@@ -183,24 +238,35 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
                 // Calculate s_corr using poly6 kernel
                 // double s_corr = std::pow(h * h - glm::dot(diff, diff), 3.0);
                 // s_corr /= std::pow(h * h - (del_q * del_q), 3.0);
-                double s_corr = p.poly6[j] / poly6_del_q;
-                s_corr = std::pow(s_corr, const_n) * -1 * k;
+
+                /////////////////////// to undo: ///////////////////////
+                // double s_corr = p.poly6[j] / poly6_del_q;
+                // s_corr = std::pow(s_corr, const_n) * -1 * k;
+
+                ///////////// TRY CALC S_CORR W/ SPIKY /////////////////
+                double s_corr = (h - glm::length(p.curr_pos - n.curr_pos), 3.0);
+                s_corr /= s_corr_denom;
+                s_corr = -k * pow(s_corr, const_n);
+                ////////////////////////////////////////////////////////
 
                 new_del_p += (p.lambda + n.lambda + s_corr) * intermed;
             }
             p.del_p = new_del_p / rho;
             // TODO: Collision detection?
-            bbox.collides(p, dt);
+            // bbox.collides(p, dt);
             // handle particle collisions with each other
-            particle_collisions(p);
+            // particle_collisions(p);
         }
         // Update pred_pos
-        for (auto &p : particles) {
+        // for (auto &p : particles) {
+        // #pragma omp parallel for
+        for (int k = 0; k < particles.size(); k++) {
+            Particle &p = particles.at(k);
             p.pred_pos += p.del_p;
             if (p.num_collisions != 0) {
-                p.pred_pos += (1.0 / (double) p.num_collisions) * p.adjustment_vec; 
+                p.pred_pos += (1.0 / (double) p.num_collisions) * p.adjustment_vec;
             }
-            // bbox.collides(p, dt);
+            bbox.collides(p, dt);
             // // handle particle collisions with each other
             // particle_collisions(p);
         }
@@ -208,11 +274,14 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
 
     // Update velocity, position, vorticity, XSPH
     // #pragma omp parallel
-    for (auto &p : particles) {
+    // for (auto &p : particles) {
+    // #pragma omp parallel for
+    for (int k = 0; k < particles.size(); k++) {
+        Particle &p = particles.at(k);
         p.vdt = (1.0 / dt) * (p.pred_pos - p.curr_pos);
 
         // bbox.collides(p, dt);
-        
+
         // TODO: Do this after?
         p.vdt.x *= p.wall_collide.x;
         p.vdt.y *= p.wall_collide.y;
@@ -229,7 +298,17 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
 
             glm::dvec3 vij = n.vdt - p.vdt;
             omega += glm::cross(vij, -p.spiky[j]);
-            visc += p.poly6[j] * vij;
+            ///////////////// to undo: ////////////////
+
+            // visc += p.poly6[j] * vij;
+
+            //////////////// VISCO. ///////////////////
+            double r = glm::length(p.curr_pos - n.curr_pos);
+            double weight = - pow(r, 3.0) / (2 * pow(h, 3.0)) + pow(r, 2.0) / pow(h, 2.0);
+            weight += h / (2 * r) - 1;
+            visc += weight * vij;
+            ///////////////////////////////////////////
+
             // glm::dvec3 diff = p.curr_pos - n.curr_pos;
             // // glm::dvec3 diff = n.vdt - p.vdt;
             // visc += diff * std::pow(h * h - glm::dot(diff, diff), 3.0);
@@ -287,7 +366,7 @@ void Particles::particle_collisions(Particle &p) {
             // std::cout << "... and collided" << n.id << std::endl;
             // std::cout << "p.pred_pos before: (" << p.pred_pos.x << ", " << p.pred_pos.y << ", " << p.pred_pos.z << ")" << std::endl;
             // std::cout << "n.pred_pos before: (" << n.pred_pos.x << ", " << n.pred_pos.y << ", " << n.pred_pos.z << ")" << std::endl;
-            // apply correction vector to both 
+            // apply correction vector to both
             glm::dvec3 p_corr = p.pred_pos - p.curr_pos;
             glm::dvec3 n_corr = n.pred_pos - n.curr_pos;
             double p_corr_len = glm::length(p_corr) - (diff / 2);
@@ -362,7 +441,7 @@ float Particles::hash_position(glm::dvec3 pos) {
     double t = fmax(w, h);
 
     glm::dvec3 truncatedPos = glm::dvec3(floor((pos.x + 2)/ w), floor((pos.y + 2) / h), floor((pos.z + 2) / t));
-    // std::cout << "pos x: " << truncatedPos.x << ", pos y: " << truncatedPos.y << ", pos z: " << truncatedPos.z << std::endl; 
+    // std::cout << "pos x: " << truncatedPos.x << ", pos y: " << truncatedPos.y << ", pos z: " << truncatedPos.z << std::endl;
     float hash = sqrt(2) * truncatedPos.x + sqrt(3) * truncatedPos.y + sqrt(5) * truncatedPos.z;
     // std::cout << "hash: " << hash << std::endl;
     return hash;
@@ -378,7 +457,7 @@ void Particles::render() const
     glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
     glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-    
+
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
     glEnable(GL_DEPTH_TEST);
@@ -389,10 +468,10 @@ void Particles::render() const
     glColor3f(0.9, 0.9, 0.9);
     glColorMaterial(GL_FRONT, GL_AMBIENT);
     glColor3f(0.2, 0.5, 0.8);
-    
+
     int i = 0 ;
     for(const Particle &par : particles)
-    {    
+    {
         // Source for push/pop: http://www.swiftless.com/tutorials/opengl/pop_and_push_matrices.html
 
         glPushMatrix(); // Set where to start the current object transformations
@@ -401,7 +480,6 @@ void Particles::render() const
         glPopMatrix(); // End the current object transformations
         i++;
     }
-    
+
     glPopAttrib();
 }
-

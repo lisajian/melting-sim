@@ -42,6 +42,28 @@ struct BBox {
             p.wall_collide = glm::dvec3(1, 1, 1);
             // p.wall_collide_f = glm::dvec3(1, 1, 1);
 
+            // if (next_step.x > b_max.x) {
+            //     p.pred_pos.x = b_max.x;
+            // }
+            // if (next_step.x < b_min.x) {
+            //     p.pred_pos.x = b_min.x;
+            // }
+            // if (next_step.y > b_max.y) {
+            //     p.pred_pos.y = b_max.y;
+            // }
+            if (next_step.y < b_min.y) {
+                p.pred_pos.y = b_min.y;
+            }
+            // if (next_step.z > b_max.z) {
+            //     p.pred_pos.z = b_max.z;
+            // }
+            // if (next_step.z < b_min.z) {
+            //     p.pred_pos.z = b_min.z;
+            // }
+
+            return c;
+            //////////////////////// OLD VERSION ///////////////////////////
+
             // Collided with bounding box; make adjustment in position
             // TODO: Implement self collisions
             if (next_step.x > b_max.x || next_step.x < b_min.x) {

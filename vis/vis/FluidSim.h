@@ -15,7 +15,7 @@ struct FluidSim {
     FluidSim() {
         dt = 0.1;
         rho = 100;
-        h = 0.15;
+        h = 2;
         k = 0.001;
         del_q = 0.01 * h;
         c = 0.01;
