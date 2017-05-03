@@ -31,7 +31,12 @@ struct Particle {
     glm::dvec3 wall_collide;
     glm::dvec3 wall_collide_f;
     glm::dvec3 particle_collide;
+
+    // The indices for these correspond to the same neighboring particle
     std::vector<Particle> neighbors;
+    std::vector<double> poly6;
+    std::vector<glm::dvec3> spiky;
+    
     float mass;
     double C;
     double lambda;
