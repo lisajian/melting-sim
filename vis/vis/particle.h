@@ -27,6 +27,9 @@ struct Particle {
     glm::dvec3 vdt;
     glm::dvec3 new_vdt;
     glm::dvec3 forces;
+
+    // All values used in collision detection/adjustment
+    int num_collisions;
     glm::dvec3 adjustment_vec;
     glm::dvec3 wall_collide;
     glm::dvec3 wall_collide_f;

@@ -19,7 +19,7 @@ Particles::Particles() {
     bbox = BBox(glm::dvec3(-2, -2, -2), glm::dvec3(2, 2, 2));
     default_forces = {glm::dvec3(0, -9.8, 0)};
     default_mass = 10;
-    nx = 2;
+    nx = 1;
     ny = 2;
     nz = 1;
     reset();
@@ -69,6 +69,7 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
     }
 
     //////////////////////////// TESTING RING ///////////////////////////
+    build_spatial_map();
     for (auto &p : particles) {
         find_neighboring(h, p);
         particle_collisions(p);
@@ -260,11 +261,17 @@ void Particles::calc_poly6(Particle &p, double poly6_const, double h) {
 
 void Particles::particle_collisions(Particle &p) {
     float radius = 0.04;
+    std::cout << "=======================" << std::endl;
+    std::cout << "p.id: " << p.id << std::endl;
     for (auto &n : p.neighbors) {
+        // std::cout << "neighbors with: " << n.id << std::endl;
         float diff = glm::length(p.pred_pos - n.pred_pos);
         p.particle_collide = glm::dvec3(1, 1, 1);
         if (diff < 2 * radius) {
-            // apply correction vector to both 
+            std::cout << "... and collided" << n.id << std::endl;
+            std::cout << "p.pred_pos before: (" << p.pred_pos.x << ", " << p.pred_pos.y << ", " << p.pred_pos.z << ")" << std::endl;
+            std::cout << "n.pred_pos before: (" << n.pred_pos.x << ", " << n.pred_pos.y << ", " << n.pred_pos.z << ")" << std::endl;
+            apply correction vector to both 
             glm::dvec3 p_corr = p.pred_pos - p.curr_pos;
             glm::dvec3 n_corr = n.pred_pos - n.curr_pos;
             float p_corr_len = glm::length(p_corr) - (diff / 2);
@@ -273,6 +280,8 @@ void Particles::particle_collisions(Particle &p) {
             n_corr = glm::normalize(n_corr);
             p.pred_pos = p.curr_pos + ((double) p_corr_len * p_corr);
             n.pred_pos = n.curr_pos + ((double) n_corr_len * n_corr);
+            // std::cout << "p.pred_pos after: (" << p.pred_pos.x << ", " << p.pred_pos.y << ", " << p.pred_pos.z << ")" << std::endl;
+            // std::cout << "n.pred_pos after: (" << n.pred_pos.x << ", " << n.pred_pos.y << ", " << n.pred_pos.z << ")" << std::endl;
         }
     }
 }

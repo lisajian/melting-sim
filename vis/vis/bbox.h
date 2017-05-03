@@ -39,34 +39,34 @@ struct BBox {
             glm::dvec3 next_step = p.pred_pos;
             bool c = false;
             double clamp = 0.1;
-            p.wall_collide = glm::dvec3(1-d, 1-d, 1-d);
+            p.wall_collide = glm::dvec3(1, 1, 1);
             // p.wall_collide_f = glm::dvec3(1, 1, 1);
 
             // Collided with bounding box; make adjustment in position
             // TODO: Implement self collisions
             if (next_step.x > b_max.x || next_step.x < b_min.x) {
                 double adj = fmin(std::abs(next_step.x - b_min.x), std::abs(next_step.x - b_max.x));
-                p.pred_pos += adj * (p.curr_pos - next_step);
+                p.pred_pos += adj * glm::normalize(p.curr_pos - next_step);
                 p.wall_collide = glm::dvec3(-(1 - d), 1 - d, 1 - d);
                 c = true;
-                std::cout << "out of x" << std::endl;
-                std::cout << p.curr_pos.x << ", " << p.curr_pos.y << ", " << p.curr_pos.z << std::endl;
+                // std::cout << "out of x" << std::endl;
+                // std::cout << p.curr_pos.x << ", " << p.curr_pos.y << ", " << p.curr_pos.z << std::endl;
             }
             if (next_step.y > b_max.y || next_step.y < b_min.y) {
                 double adj = fmin(std::abs(next_step.y - b_min.y), std::abs(next_step.y - b_max.y));
-                p.pred_pos += adj * (p.curr_pos - next_step);
+                p.pred_pos += adj * glm::normalize(p.curr_pos - next_step);
                 p.wall_collide = glm::dvec3(1 - d, -(1 - d), 1 - d);
                 c = true;
-                std::cout << "out of y" << std::endl;
-                std::cout << p.curr_pos.x << ", " << p.curr_pos.y << ", " << p.curr_pos.z << std::endl;
+                // std::cout << "out of y" << std::endl;
+                // std::cout << p.curr_pos.x << ", " << p.curr_pos.y << ", " << p.curr_pos.z << std::endl;
             }
             if (next_step.z > b_max.z || next_step.z < b_min.z) {
                 double adj = fmin(std::abs(next_step.z - b_min.z), std::abs(next_step.z - b_max.z));
-                p.pred_pos += adj * (p.curr_pos - next_step);
+                p.pred_pos += adj * glm::normalize(p.curr_pos - next_step);
                 p.wall_collide = glm::dvec3(1 - d, 1 - d, -(1 - d));
                 c = true;
-                std::cout << "out of z" << std::endl;
-                std::cout << p.curr_pos.x << ", " << p.curr_pos.y << ", " << p.curr_pos.z << std::endl;
+                // std::cout << "out of z" << std::endl;
+                // std::cout << p.curr_pos.x << ", " << p.curr_pos.y << ", " << p.curr_pos.z << std::endl;
             }
 
             double min_dist = 0.05;
