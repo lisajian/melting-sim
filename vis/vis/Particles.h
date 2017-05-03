@@ -41,6 +41,8 @@ class Particles {
         void build_spatial_map();
         float hash_position(glm::dvec3 pos);
         void particle_collisions(Particle &p);
+        void calc_spiky(Particle &p, double spiky_const, double h);
+        void calc_poly6(Particle &p, double poly6_const, double h);
     private:
         std::vector<Particle> particles;
         BBox bbox;
