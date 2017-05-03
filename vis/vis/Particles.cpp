@@ -19,9 +19,9 @@ Particles::Particles() {
     bbox = BBox(glm::dvec3(-2, -2, -2), glm::dvec3(2, 2, 2));
     default_forces = {glm::dvec3(0, -9.8, 0)};
     default_mass = 10;
-    nx = 1;
+    nx = 2;
     ny = 2;
-    nz = 1;
+    nz = 2;
     reset();
 }
 
@@ -62,25 +62,38 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
     // Generic time step update
     // #pragma omp parallel
     for (auto &p : particles) {
-        p.vdt = p.vdt + dt * p.forces / (double) p.mass;
+        p.vdt = 0.85 * (p.vdt + dt * p.forces / (double) p.mass);
         p.pred_pos = p.curr_pos + dt * p.vdt;
+        p.num_collisions = 0;
+        p.adjustment_vec = glm::dvec3(0, 0, 0);
         // p.curr_pos = p.pred_pos; // TODO: comment out
         // bbox.collides(p, dt); // TODO: comment out
     }
 
-    //////////////////////////// TESTING RING ///////////////////////////
-    build_spatial_map();
-    for (auto &p : particles) {
-        find_neighboring(h, p);
-        particle_collisions(p);
-        bbox.collides(p, dt);
-    }
+    // //////////////////////////// TESTING RING ///////////////////////////
+    // build_spatial_map();
+    // for (auto &p : particles) {
+    //     find_neighboring(h, p);
+    //     particle_collisions(p);
+    //     bbox.collides(p, dt);
+    // }
 
-    for (auto &p : particles) {
-        p.vdt = (1.0 / dt) * (p.pred_pos - p.curr_pos);
-        p.curr_pos = p.pred_pos;
-    }
-    return;
+    // for (auto &p : particles) {
+    //     if (p.num_collisions != 0) {
+    //         p.pred_pos += (1.0 / (double) p.num_collisions) * p.adjustment_vec; 
+    //     }
+    // }
+
+    // // double d = 0.35;
+    // for (auto &p : particles) {
+    //     p.vdt = (1.0 / dt) * (p.pred_pos - p.curr_pos);
+    //     // p.vdt *= std::pow(1-d, p.num_collisions);
+    //     p.vdt.x *= p.wall_collide.x;
+    //     p.vdt.y *= p.wall_collide.y;
+    //     p.vdt.z *= p.wall_collide.z;
+    //     p.curr_pos = p.pred_pos;
+    // }
+    // return;
     //////////////////////////// TESTING RING ///////////////////////////
 
     double poly6_const = 315.0 / (64.0 * M_PI * std::pow(h, 9.0));
@@ -184,6 +197,9 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
         // Update pred_pos
         for (auto &p : particles) {
             p.pred_pos += p.del_p;
+            if (p.num_collisions != 0) {
+                p.pred_pos += (1.0 / (double) p.num_collisions) * p.adjustment_vec; 
+            }
             // bbox.collides(p, dt);
             // // handle particle collisions with each other
             // particle_collisions(p);
@@ -260,26 +276,30 @@ void Particles::calc_poly6(Particle &p, double poly6_const, double h) {
 }
 
 void Particles::particle_collisions(Particle &p) {
-    float radius = 0.04;
-    std::cout << "=======================" << std::endl;
-    std::cout << "p.id: " << p.id << std::endl;
+    float radius = 0.1;
+    // std::cout << "=======================" << std::endl;
+    // std::cout << "p.id: " << p.id << std::endl;
     for (auto &n : p.neighbors) {
         // std::cout << "neighbors with: " << n.id << std::endl;
-        float diff = glm::length(p.pred_pos - n.pred_pos);
+        double diff = glm::length(p.pred_pos - n.pred_pos);
         p.particle_collide = glm::dvec3(1, 1, 1);
         if (diff < 2 * radius) {
-            std::cout << "... and collided" << n.id << std::endl;
-            std::cout << "p.pred_pos before: (" << p.pred_pos.x << ", " << p.pred_pos.y << ", " << p.pred_pos.z << ")" << std::endl;
-            std::cout << "n.pred_pos before: (" << n.pred_pos.x << ", " << n.pred_pos.y << ", " << n.pred_pos.z << ")" << std::endl;
-            apply correction vector to both 
+            // std::cout << "... and collided" << n.id << std::endl;
+            // std::cout << "p.pred_pos before: (" << p.pred_pos.x << ", " << p.pred_pos.y << ", " << p.pred_pos.z << ")" << std::endl;
+            // std::cout << "n.pred_pos before: (" << n.pred_pos.x << ", " << n.pred_pos.y << ", " << n.pred_pos.z << ")" << std::endl;
+            // apply correction vector to both 
             glm::dvec3 p_corr = p.pred_pos - p.curr_pos;
             glm::dvec3 n_corr = n.pred_pos - n.curr_pos;
-            float p_corr_len = glm::length(p_corr) - (diff / 2);
-            float n_corr_len = glm::length(n_corr) - (diff / 2);
+            double p_corr_len = glm::length(p_corr) - (diff / 2);
+            double n_corr_len = glm::length(n_corr) - (diff / 2);
             p_corr = glm::normalize(p_corr);
             n_corr = glm::normalize(n_corr);
-            p.pred_pos = p.curr_pos + ((double) p_corr_len * p_corr);
-            n.pred_pos = n.curr_pos + ((double) n_corr_len * n_corr);
+            // p.pred_pos = p.curr_pos + ((double) p_corr_len * p_corr);
+            // n.pred_pos = n.curr_pos + ((double) n_corr_len * n_corr);
+            p.adjustment_vec += p_corr_len * p_corr;
+            n.adjustment_vec += n_corr_len * n_corr;
+            p.num_collisions++;
+            n.num_collisions++;
             // std::cout << "p.pred_pos after: (" << p.pred_pos.x << ", " << p.pred_pos.y << ", " << p.pred_pos.z << ")" << std::endl;
             // std::cout << "n.pred_pos after: (" << n.pred_pos.x << ", " << n.pred_pos.y << ", " << n.pred_pos.z << ")" << std::endl;
         }
