@@ -209,8 +209,8 @@ void Particles::particle_collisions(Particle &p) {
             // apply correction vector to both 
             glm::dvec3 p_corr = p.pred_pos - p.curr_pos;
             glm::dvec3 n_corr = n.pred_pos - n.curr_pos;
-            float p_corr_len = 2 * radius - glm::length(p_corr);
-            float n_corr_len = 2 * radius - glm::length(n_corr);
+            float p_corr_len = glm::length(p_corr) - (diff / 2);
+            float n_corr_len = glm::length(n_corr) - (diff / 2);
             p_corr = glm::normalize(p_corr);
             n_corr = glm::normalize(n_corr);
             p.pred_pos = p.curr_pos + ((double) p_corr_len * p_corr);
