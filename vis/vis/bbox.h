@@ -39,8 +39,8 @@ struct BBox {
             glm::dvec3 next_step = p.pred_pos;
             bool c = false;
             double clamp = 0.1;
-            p.wall_collide = glm::dvec3(1, 1, 1);
-            p.wall_collide_f = glm::dvec3(1, 1, 1);
+            p.wall_collide = glm::dvec3(1-d, 1-d, 1-d);
+            // p.wall_collide_f = glm::dvec3(1, 1, 1);
 
             // Collided with bounding box; make adjustment in position
             // TODO: Implement self collisions
@@ -73,18 +73,18 @@ struct BBox {
             // Stop the particle if the velocity is small and it's close to
             // a face of the bounding box
             // TODO: Do this for all faces
-            if (next_step.y - b_min.y < 0) {
-                std::cout << "===================" << std::endl; 
-                std::cout << "p.id: " << p.id << std::endl;
-                std::cout << "glm::length((1.0 / dt) * (p.pred_pos + p.del_p - p.curr_pos)): " << glm::length((1.0 / dt) * (p.pred_pos + p.del_p - p.curr_pos)) << std::endl;
-                std::cout << "glm::length(p.vdt): " << glm::length(p.vdt) << std::endl;
-                std::cout << "std::abs(next_step.y - b_min.y): " << std::abs(next_step.y - b_min.y) << std::endl;
-                // std::cout << "std::abs(next_step.y - b_max.y): " << std::abs(next_step.y - b_max.y) << std::endl;
-                // std::cout << "std::abs(next_step.x - b_min.x): " << std::abs(next_step.x - b_min.x) << std::endl;
-                // std::cout << "std::abs(next_step.x - b_max.x): " << std::abs(next_step.x - b_max.x) << std::endl;
-                // std::cout << "std::abs(next_step.z - b_min.z): " << std::abs(next_step.z - b_min.z) << std::endl;
-                // std::cout << "std::abs(next_step.z - b_max.z): " << std::abs(next_step.z - b_max.z) << std::endl;
-            }
+            // if (next_step.y - b_min.y < 0) {
+            //     std::cout << "===================" << std::endl; 
+            //     std::cout << "p.id: " << p.id << std::endl;
+            //     std::cout << "glm::length((1.0 / dt) * (p.pred_pos + p.del_p - p.curr_pos)): " << glm::length((1.0 / dt) * (p.pred_pos + p.del_p - p.curr_pos)) << std::endl;
+            //     std::cout << "glm::length(p.vdt): " << glm::length(p.vdt) << std::endl;
+            //     std::cout << "std::abs(next_step.y - b_min.y): " << std::abs(next_step.y - b_min.y) << std::endl;
+            //     // std::cout << "std::abs(next_step.y - b_max.y): " << std::abs(next_step.y - b_max.y) << std::endl;
+            //     // std::cout << "std::abs(next_step.x - b_min.x): " << std::abs(next_step.x - b_min.x) << std::endl;
+            //     // std::cout << "std::abs(next_step.x - b_max.x): " << std::abs(next_step.x - b_max.x) << std::endl;
+            //     // std::cout << "std::abs(next_step.z - b_min.z): " << std::abs(next_step.z - b_min.z) << std::endl;
+            //     // std::cout << "std::abs(next_step.z - b_max.z): " << std::abs(next_step.z - b_max.z) << std::endl;
+            // }
             // std::cout << "===================" << std::endl; 
             // std::cout << "p.id: " << p.id << std::endl;
             // std::cout << "glm::length((1.0 / dt) * (p.pred_pos + p.del_p - p.curr_pos)): " << glm::length((1.0 / dt) * (p.pred_pos + p.del_p - p.curr_pos)) << std::endl;

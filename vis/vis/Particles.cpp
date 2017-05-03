@@ -18,10 +18,10 @@
 Particles::Particles() {
     bbox = BBox(glm::dvec3(-2, -2, -2), glm::dvec3(2, 2, 2));
     default_forces = {glm::dvec3(0, -9.8, 0)};
-    default_mass = 3;
+    default_mass = 10;
     nx = 2;
-    ny = 1;
-    nz = 2;
+    ny = 2;
+    nz = 1;
     reset();
 }
 
@@ -67,6 +67,20 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
         // p.curr_pos = p.pred_pos; // TODO: comment out
         // bbox.collides(p, dt); // TODO: comment out
     }
+
+    //////////////////////////// TESTING RING ///////////////////////////
+    for (auto &p : particles) {
+        find_neighboring(h, p);
+        particle_collisions(p);
+        bbox.collides(p, dt);
+    }
+
+    for (auto &p : particles) {
+        p.vdt = (1.0 / dt) * (p.pred_pos - p.curr_pos);
+        p.curr_pos = p.pred_pos;
+    }
+    return;
+    //////////////////////////// TESTING RING ///////////////////////////
 
     double poly6_const = 315.0 / (64.0 * M_PI * std::pow(h, 9.0));
     double spiky_const = - 45.0 / (M_PI * std::pow(h, 6.0));
