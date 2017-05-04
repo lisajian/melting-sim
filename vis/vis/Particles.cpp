@@ -14,16 +14,16 @@
 #include "Particles.h"
 #include "Utils.h"
 #include <limits>
-// #include <omp.h>
+#include <omp.h>
 #include <valarray>
 
 Particles::Particles() {
     bbox = BBox(glm::dvec3(-2, -2, -2), glm::dvec3(2, 2, 2));
     default_forces = {glm::dvec3(0, -9.8, 0)};
     default_mass = 10;
-    nx = 4;
-    ny = 1;
-    nz = 4;
+    nx = 3;
+    ny = 3;
+    nz = 3;
     reset();
 }
 
@@ -62,8 +62,9 @@ void Particles::reset() {
 void Particles::step(double dt, double h, double rho, double eps, double k, \
                      double const_n, double del_q, int solverIterations, double c, double eps_vort) {
 
-    //////////// WHAT????? //////////////
-    // std::valarray<int> v = {1, 2, 3, 4};
+    ////////// WHAT????? //////////////
+    // std::cout << "===============" << std::endl;
+    // std::valarray<int> v = {1, 2, 3};
     // std::valarray<int> w = {5, 6, 7, 8};
     // std::valarray<int> r = v + w;
     // // std::cout << r[0] << std::endl;
@@ -72,7 +73,7 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
     // }
     // std::cout << std::endl;
     // // std::cout << (v * v) << std::endl;
-    // std::valarray<int> t = v * v;
+    // std::valarray<int> t = v * w;
     // for (auto n : t) {
     //   std::cout << n << " ";
     // }
@@ -83,17 +84,18 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
     // }
     // std::cout << std::endl;
     //
-    // std::valarray<glm::dvec3> a = {glm::dvec3(1, 0, 0), glm::dvec3(0, 1, 1)};
-    // std::valarray<glm::dvec3> b = 3 * a;
-    // for (auto n : a) {
-    //   std::cout << n.x << ", " << n.y << ", " << n.z << std::endl;
-    // }
+    // // std::valarray<glm::dvec3> a = {glm::dvec3(1, 0, 0), glm::dvec3(0, 1, 1)};
+    // // std::valarray<glm::dvec3> b = 3.0 * a;
+    // // for (auto n : a) {
+    // //   std::cout << n.x << ", " << n.y << ", " << n.z << std::endl;
+    // // }
     // return;
-    //////////// WHAT????? //////////////
+    ////////// WHAT????? //////////////
 
     // Generic time step update
-    // #pragma omp parallel
-    for (auto &p : particles) {
+    // #pragma omp parallel for
+    for (int i = 0; i < particles.size(); i++) {
+        Particle &p = particles.at(i);
         p.vdt = 0.85 * (p.vdt + dt * p.forces / (double) p.mass);
         p.pred_pos = p.curr_pos + dt * p.vdt;
         p.num_collisions = 0;
@@ -131,32 +133,21 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
     double poly6_const = 315.0 / (64.0 * M_PI * std::pow(h, 9.0));
     double spiky_const = - 45.0 / (M_PI * std::pow(h, 6.0));
 
-    // return; // TODO: remove this
-
     // Get neighbors. Distance between point centers is hardcoded
     // double inf = std::numeric_limits<double>::infinity();
     build_spatial_map();
     // #pragma omp parallel
     for (auto &p : particles) {
         find_neighboring(h, p);
-        // printing
-        // if (p.neighbors.size() > 0) {
-        //     std::cout << p.id << "'s neighbors: " << std::endl;
-        //     for (int i = 0; i < p.neighbors.size(); i++) {
-        //         std::cout << p.neighbors.at(i).id << std::endl;
-        //     }
-        // }
-        p.poly6 = std::vector<double>(p.neighbors.size());
+        // p.poly6 = std::vector<double>(p.neighbors.size());
         p.spiky = std::vector<glm::dvec3>(p.neighbors.size());
-        // calc_spiky(p, spiky_const, h);
-        // calc_poly6(p, poly6_const, h);
     }
 
     // #pragma omp parallel for
     for (int i = 0; i < particles.size(); i++) {
         Particle &p = particles.at(i);
         calc_spiky(p, spiky_const, h);
-        calc_poly6(p, poly6_const, h);
+        // calc_poly6(p, poly6_const, h);
     }
 
     // constants for kernels
@@ -175,31 +166,20 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
             Particle &p = particles.at(k);
             // Use poly6 kernel for rho (pressure)
             double rho_i = 0.0;
-            // std::cout << "p.id: " << p.id << std::endl;
-            // for (auto &n : p.neighbors) {
-                // std::cout << "I HAVE NEIGHBORS" << std::endl;
-                // glm::dvec3 diff = p.curr_pos - n.curr_pos;
-                // rho_i += n.mass * std::pow(h * h - glm::dot(diff, diff), 3.0);
-            // }
-            // for (int j = 0; j < p.neighbors.size(); j++) {
-            //     rho_i += p.poly6[j];
-            // }
-            // rho_i *= default_mass;
-            //
-            // // rho_i *= poly6_const;
-            // p.C = rho_i / rho - 1.0;
 
             // Use spiky kernel for gradients
             glm::dvec3 grad_i_W = glm::dvec3(0, 0, 0);
             double grad_j_W = 0.0;
             // for (auto &n : p.neighbors) {
             for (int j = 0; j < p.neighbors.size(); j++) {
-                // glm::dvec3 diff = p.curr_pos - n.curr_pos;
+              Particle &n = p.neighbors.at(j);
+                glm::dvec3 diff = p.curr_pos - n.curr_pos;
+                rho_i += pow(h * h - glm::dot(diff, diff), 3.0);
                 // double len = glm::length(diff);
                 // glm::dvec3 intermed = (std::pow(h - len, 2.0) / len) * diff;
                 // intermed *= spiky_const;
                 ////////////////////
-                rho_i += p.poly6[j];
+                // rho_i += p.poly6[j];
                 ////////////////////
 
                 glm::dvec3 intermed = p.spiky[j];
@@ -209,7 +189,7 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
             }
 
             ////////////////////
-            rho_i *= default_mass;
+            rho_i *= default_mass * poly6_const;
             p.C = rho_i / rho - 1.0;
             ////////////////////
 
@@ -226,19 +206,11 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
             // for (auto &n : p.neighbors) {
             for (int j = 0; j < p.neighbors.size(); j++) {
                 Particle &n = p.neighbors.at(j);
-                // glm::dvec3 diff = p.curr_pos - n.curr_pos;
 
                 // // Get the gradient
-                // double len = glm::length(diff);
-                // glm::dvec3 intermed = (pow(h - len, 2.0) / len) * diff;
-                // intermed *= spiky_const;
-
                 glm::dvec3 intermed = p.spiky[j];
 
                 // Calculate s_corr using poly6 kernel
-                // double s_corr = std::pow(h * h - glm::dot(diff, diff), 3.0);
-                // s_corr /= std::pow(h * h - (del_q * del_q), 3.0);
-
                 /////////////////////// to undo: ///////////////////////
                 // double s_corr = p.poly6[j] / poly6_del_q;
                 // s_corr = std::pow(s_corr, const_n) * -1 * k;
@@ -273,9 +245,7 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
     }
 
     // Update velocity, position, vorticity, XSPH
-    // #pragma omp parallel
-    // for (auto &p : particles) {
-    // #pragma omp parallel for
+    #pragma omp parallel for
     for (int k = 0; k < particles.size(); k++) {
         Particle &p = particles.at(k);
         p.vdt = (1.0 / dt) * (p.pred_pos - p.curr_pos);
@@ -309,14 +279,6 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
             visc += weight * vij;
             ///////////////////////////////////////////
 
-            // glm::dvec3 diff = p.curr_pos - n.curr_pos;
-            // // glm::dvec3 diff = n.vdt - p.vdt;
-            // visc += diff * std::pow(h * h - glm::dot(diff, diff), 3.0);
-
-            // double len = glm::length(diff);
-            // glm::dvec3 grad_j_W = (std::pow(h - len, 2.0) / len) * diff; // Positive b/c derivative wrt pj
-            // grad_j_W *= -1 * spiky_const; // Negative b/c should be n.curr_pos - p.curr_pos
-            // omega += glm::cross(n.vdt - p.vdt, grad_j_W);
         }
         if (!glm::all(glm::equal(omega, glm::dvec3(0, 0, 0)))) {
             eta = glm::normalize(omega);
@@ -332,10 +294,6 @@ void Particles::step(double dt, double h, double rho, double eps, double k, \
         p.vdt += c * visc;
 
         p.curr_pos = p.pred_pos;
-        // std::cout << "p.id: " << p.id << std::endl;
-        // std::cout << "position: (" << p.curr_pos.x << ", " << p.curr_pos.y << ", " << p.curr_pos.z << ")" << std::endl;
-        // std::cout << "vorticity: (" << vorticity.x << ", " << vorticity.y << ", " << vorticity.z << ")" << std::endl;
-        // std::cout << "eta: (" << eta.x << ", " << eta.y << ", " << eta.z << ")" << std::endl;
 
     }
 }
@@ -402,7 +360,7 @@ void Particles::find_neighboring(double h, Particle &p) {
         for (Particle *m : *matches) {
             if (m != &p) {
               double dist = glm::length(p.curr_pos - m->curr_pos);
-              if (dist <= h) {
+              if (dist <= 0.15) {
                 p.neighbors.push_back(*m);
               }
             }

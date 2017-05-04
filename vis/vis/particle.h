@@ -4,6 +4,7 @@
 #define PARTICLE_H
 
 #include <vector>
+#include <valarray>
 // #include <glm/glm.hpp>
 #include "glm/glm/glm.hpp"
 #if defined(__APPLE_CC__)
@@ -26,19 +27,18 @@ struct Particle {
     glm::dvec3 pred_pos;
     glm::dvec3 del_p;
     glm::dvec3 vdt;
-    glm::dvec3 new_vdt;
+    // glm::dvec3 new_vdt;
     glm::dvec3 forces;
 
     // All values used in collision detection/adjustment
     int num_collisions;
     glm::dvec3 adjustment_vec;
     glm::dvec3 wall_collide;
-    glm::dvec3 wall_collide_f;
     glm::dvec3 particle_collide;
 
     // The indices for these correspond to the same neighboring particle
     std::vector<Particle> neighbors;
-    std::vector<double> poly6;
+    // std::vector<double> poly6;
     std::vector<glm::dvec3> spiky;
 
     float mass;
