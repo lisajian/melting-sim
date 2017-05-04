@@ -4,7 +4,8 @@
 #define PARTICLE_H
 
 #include <vector>
-#include <glm/glm.hpp>
+// #include <glm/glm.hpp>
+#include "glm/glm/glm.hpp"
 #if defined(__APPLE_CC__)
 #include <GLUT/glut.h>
 #else
@@ -39,7 +40,7 @@ struct Particle {
     std::vector<Particle> neighbors;
     std::vector<double> poly6;
     std::vector<glm::dvec3> spiky;
-    
+
     float mass;
     double C;
     double lambda;
