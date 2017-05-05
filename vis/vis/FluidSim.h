@@ -16,14 +16,26 @@ struct FluidSim {
         dt = 0.1;
         rho = 100;
         h = 2;
-        k = 0.001;
-        del_q = 0.01 * h;
+        k = 0.1;
+        del_q = 0.1 * h;
         c = 0.01;
         n = 4;
         eps = 1000;
-        eps_vort = 0.001;
-        all_particles = Particles();
+        eps_vort = 0.01;
+        all_particles = Particles(h);
         solverIterations = 1;
+
+        // dt = 0.1;
+        // rho = 100;
+        // h = 2;
+        // k = 0.1;
+        // del_q = 0.1 * h;
+        // c = 0.01;
+        // n = 4;
+        // eps = 1000;
+        // eps_vort = 0.01;
+        // all_particles = Particles(h);
+        // solverIterations = 1;
     }
 
     // Size of time step
@@ -49,7 +61,7 @@ struct FluidSim {
     int solverIterations;
     // Used in XSPH viscocity calculation
     double c;
-    Particles all_particles;
+    Particles all_particles = Particles(1);
 
     void reset();
     void step();

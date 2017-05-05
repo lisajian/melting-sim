@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-/* 
+/*
  * File:   Particles.h
  * Author: swl
  *
@@ -30,7 +30,7 @@
 
 class Particles {
     public:
-        Particles();
+        Particles(double const_h);
         // Particles(BBox b) : bbox(b) {} // TODO: Particles don't need to know about bounding box...
 
         void render() const;
@@ -52,7 +52,11 @@ class Particles {
         int nx;
         int ny;
         int nz;
+        double w;
+        double h;
+        double t;
+        double poly6_const;
+        double spiky_const;
 };
 
 #endif /* PARTICLES_H */
-

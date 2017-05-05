@@ -12,7 +12,7 @@
 #endif
 
 
-inline float clip(const float& n, const float& lower, const float& upper) 
+inline float clip(const float& n, const float& lower, const float& upper)
 {
     return glm::max(lower, glm::min(n, upper));
 }
@@ -35,15 +35,18 @@ void display(void);
 void reshape(int width, int height);
 
 void idle(void) {
-    // if (frame/render_step < 10) {
-    //     std::cout << "step: " << frame << std::endl;
-    //     fluidSim.step();
-    //     glutPostRedisplay();
-    // }
-    fluidSim.step();
     glutPostRedisplay();
+    return;
+    if (frame/render_step < 10) {
+        std::cout << "step: " << frame << std::endl;
+        fluidSim.step();
+        glutPostRedisplay();
+    }
+    // fluidSim.step();
+    // glutPostRedisplay();
     if(frame/render_step >= 10) {
         // std::cout << "stopped" << std::endl;
+        glutPostRedisplay();
         return;
     }
     if(frame%render_step == 0)
@@ -68,6 +71,7 @@ void motion(int x, int y);
 void keyboard(unsigned char key, int x, int y) {
     switch(key) {
         case 'r' :
+            frame = 0;
             fluidSim.reset();
             break;
         case '=':
@@ -78,6 +82,10 @@ void keyboard(unsigned char key, int x, int y) {
             if (_zoom <= 0.1) {
                 _zoom = 0.1;
             }
+            break;
+        case 'n':
+            fluidSim.step();
+            glutPostRedisplay();
             break;
         default:
             break;
@@ -116,7 +124,7 @@ void display(void) {
     glLoadIdentity();
     gluPerspective(90, 1, 0.01, 100);
     gluLookAt(dist*sin(phi)*cos(theta), dist*cos(phi), dist*sin(phi)*sin(theta),
-            0, 0, 0, 
+            0, 0, 0,
             0, 1, 0);
     glScalef(_zoom,_zoom,_zoom);
 
